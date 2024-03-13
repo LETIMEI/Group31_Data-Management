@@ -27,19 +27,11 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           Rscript -e 'install.packages(c("readr", "RSQLite", "dplyr", "chron", "ggplot2"))'
-      - name: Execute R script
-        run: |
-          Rscript R/regression_plot.R
-      - name: Add files
-        run: |
-          git config --global user.email "nikos.korfiatis@gmail.com"
-          git config --global user.name "nkorf"
-          git add --all figures/
-      - name: Commit files
-        run: |
-          git commit -m "Add regression plot figure"
-      - name: Push changes
-        uses: ad-m/github-push-action@v0.6.0
+      - name: Render R Markdown
+        run: Rscript -e "rmarkdown::render('DataManagement31.Rmd')"
+
+      - name: Commit rendered output
+        uses: EndBug/add-and-commit@v7
         with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            branch: main
+          message: Rendered R Markdown output
+          add: '*.html'
