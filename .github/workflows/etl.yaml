@@ -1,4 +1,4 @@
-name: Update Repo
+name: Update Repos
 
 on:
 #  schedule:
