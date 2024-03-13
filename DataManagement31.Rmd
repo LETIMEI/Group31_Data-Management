@@ -3,7 +3,7 @@ title: "Data Management Group Assignment"
 output: html_document
 date: "2024-03-07"
 editor_options: 
-  chunk_output_type: console
+chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -20,6 +20,7 @@ library(RSQLite)
 library(dplyr)
 library(chron)
 library(ggplot2)
+library(rmarkdown)
 ```
 
 ```{r connect}
@@ -167,3 +168,179 @@ CREATE TABLE IF NOT EXISTS Orders (
     );
     
 ```
+
+
+Read .csv files in (old data)
+
+```{r dataloading,message=FALSE,warning=FALSE}
+Category <- readr::read_csv("/cloud/project/old_data/category_data.csv")
+Category$category_id <- as.character(Category$category_id)
+Category$parent_id <- as.character(Category$parent_id)
+
+
+Customer <- readr::read_csv("/cloud/project/old_data/customer_data.csv")
+Customer$customer_id <- as.character(Customer$customer_id)
+
+
+Supplier <- readr::read_csv("/cloud/project/old_data/supplier_data.csv")
+Supplier$seller_id <- as.character(Supplier$seller_id)
+
+
+Warehouse <- readr::read_csv("/cloud/project/old_data/warehouse_data.csv")
+Warehouse$warehouse_id <- as.character(Warehouse$warehouse_id)
+
+
+Product <- readr::read_csv("/cloud/project/old_data/product_data.csv")
+Product$product_id <- as.character(Product$product_id)
+Product$seller_id <- as.character(Product$seller_id)
+Product$warehouse_id <- as.character(Product$warehouse_id)
+Product$category_id <- as.character(Product$category_id)
+
+
+Shipment <- readr::read_csv("/cloud/project/old_data/shipment_data.csv")
+Shipment$shipment_id <- as.character(Shipment$shipment_id)
+
+
+Orders <- readr::read_csv("/cloud/project/old_data/order_data.csv")
+
+Orders$order_date <- as.Date(Orders$order_date, format = "%Y/%m/%d")
+Orders$order_date <- as.character(Orders$order_date)
+Orders$order_id <- as.character(Orders$order_id)
+Orders$customer_id <- as.character(Orders$customer_id)
+Orders$product_id <- as.character(Orders$product_id)
+Orders$shipment_id <- as.character(Orders$shipment_id)
+
+#db exucute query
+
+```
+
+Write them to the database
+
+```{r writebacktodb}
+RSQLite::dbWriteTable(my_connection,"Category",Category,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Customer",Customer,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Supplier",Supplier,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Warehouse",Warehouse,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Product",Product,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Shipment",Shipment,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Orders",Orders,append=TRUE)
+
+```
+
+Use this to verify the table we created
+
+```{sql connection=my_connection}
+PRAGMA table_info(Orders);
+```
+
+
+Read .csv files in (new data)
+
+```{r newdataloading,message=FALSE,warning=FALSE}
+Category_new <- readr::read_csv("/cloud/project/new_data/category_data_new.csv")
+Category_new$category_id <- as.character(Category_new$category_id)
+Category_new$parent_id <- as.character(Category_new$parent_id)
+
+
+Customer_new <- readr::read_csv("/cloud/project/new_data/customer_data_new.csv")
+Customer_new$customer_id <- as.character(Customer_new$customer_id)
+
+
+Supplier_new <- readr::read_csv("/cloud/project/new_data/supplier_data_new.csv")
+Supplier_new$seller_id <- as.character(Supplier_new$seller_id)
+
+
+Warehouse_new <- readr::read_csv("/cloud/project/new_data/warehouse_data_new.csv")
+Warehouse_new$warehouse_id <- as.character(Warehouse_new$warehouse_id)
+
+
+Product_new <- readr::read_csv("/cloud/project/new_data/product_data_new.csv")
+Product_new$product_id <- as.character(Product_new$product_id)
+Product_new$seller_id <- as.character(Product_new$seller_id)
+Product_new$warehouse_id <- as.character(Product_new$warehouse_id)
+Product_new$category_id <- as.character(Product_new$category_id)
+
+
+Shipment_new <- readr::read_csv("/cloud/project/new_data/shipment_data_new.csv")
+Shipment_new$shipment_id <- as.character(Shipment_new$shipment_id)
+
+
+Orders_new <- readr::read_csv("/cloud/project/new_data/order_data_new.csv")
+
+Orders_new$order_date <- as.Date(Orders_new$order_date, format = "%Y/%m/%d")
+Orders_new$order_date <- as.character(Orders_new$order_date)
+Orders_new$order_id <- as.character(Orders_new$order_id)
+Orders_new$customer_id <- as.character(Orders_new$customer_id)
+Orders_new$product_id <- as.character(Orders_new$product_id)
+Orders_new$shipment_id <- as.character(Orders_new$shipment_id)
+
+#db exucute query
+
+```
+
+Append new data to the database
+
+```{r writebacktodbnew}
+RSQLite::dbWriteTable(my_connection,"Category",Category_new,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Customer",Customer_new,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Supplier",Supplier_new,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Warehouse",Warehouse_new,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Product",Product_new,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Shipment",Shipment_new,append=TRUE)
+RSQLite::dbWriteTable(my_connection,"Orders",Orders_new,append=TRUE)
+```
+
+Append new data to the current tables for visualization in r
+```{r}
+Warehouse <- rbind(Warehouse, Warehouse_new)
+Product <- rbind(Product, Product_new)
+Customer <- rbind(Customer, Customer_new)
+Category <- rbind(Category, Category_new)
+Supplier <- rbind(Supplier, Supplier_new)
+Orders <- rbind(Orders, Orders_new)
+Shipment <- rbind(Shipment, Shipment_new)
+
+```
+
+
+
+```{sql connection=my_connection}
+SELECT * FROM Orders
+
+```
+
+
+```{sql connection=my_connection}
+SELECT * FROM Category
+LIMIT 10
+
+```
+Data analysis and visualization
+
+Rank order value from highest to lowest
+
+```{sql connection=my_connection}
+SELECT 
+    o.order_id,
+    o.customer_id,
+    SUM(o.quantity_of_product_ordered * (p.product_price - o.voucher_value)) AS total_value
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+GROUP BY 
+    o.order_id
+ORDER BY 
+    total_value DESC;
+```
+
+Warehouse capacity v.s. current stock level
+
+```{r barplot}
+barplot(Warehouse$capacity, col = "steelblue", ylim = c(0, max(Warehouse$capacity, Warehouse$current_stock)),
+        main = "Warehouse Capacity and Current Stock", xlab = "Warehouse ID", ylab = "Quantity")
+barplot(Warehouse$current_stock, col = "lightpink", add = TRUE)
+legend("topright", legend = c("Capacity", "Current Stock"), fill = c("steelblue", "lightpink"))
+```
+
+
