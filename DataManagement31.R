@@ -136,35 +136,35 @@ CREATE TABLE IF NOT EXISTS Orders (
     );
 ")
 
-Category <- readr::read_csv("/cloud/project/old_data/category_data.csv")
+Category <- readr::read_csv("old_data/category_data.csv")
 Category$category_id <- as.character(Category$category_id)
 Category$parent_id <- as.character(Category$parent_id)
 
 
-Customer <- readr::read_csv("/cloud/project/old_data/customer_data.csv")
+Customer <- readr::read_csv("old_data/customer_data.csv")
 Customer$customer_id <- as.character(Customer$customer_id)
 
 
-Supplier <- readr::read_csv("/cloud/project/old_data/supplier_data.csv")
+Supplier <- readr::read_csv("old_data/supplier_data.csv")
 Supplier$seller_id <- as.character(Supplier$seller_id)
 
 
-Warehouse <- readr::read_csv("/cloud/project/old_data/warehouse_data.csv")
+Warehouse <- readr::read_csv("old_data/warehouse_data.csv")
 Warehouse$warehouse_id <- as.character(Warehouse$warehouse_id)
 
 
-Product <- readr::read_csv("/cloud/project/old_data/product_data.csv")
+Product <- readr::read_csv("old_data/product_data.csv")
 Product$product_id <- as.character(Product$product_id)
 Product$seller_id <- as.character(Product$seller_id)
 Product$warehouse_id <- as.character(Product$warehouse_id)
 Product$category_id <- as.character(Product$category_id)
 
 
-Shipment <- readr::read_csv("/cloud/project/old_data/shipment_data.csv")
+Shipment <- readr::read_csv("old_data/shipment_data.csv")
 Shipment$shipment_id <- as.character(Shipment$shipment_id)
 
 
-Orders <- readr::read_csv("/cloud/project/old_data/order_data.csv")
+Orders <- readr::read_csv("old_data/order_data.csv")
 
 Orders$order_date <- as.Date(Orders$order_date, format = "%Y/%m/%d")
 Orders$order_date <- as.character(Orders$order_date)
@@ -185,35 +185,35 @@ RSQLite::dbExecute(my_connection, "
 PRAGMA table_info(Orders);
 ")
 
-Category_new <- readr::read_csv("/cloud/project/new_data/category_data_new.csv")
+Category_new <- readr::read_csv("new_data/category_data_new.csv")
 Category_new$category_id <- as.character(Category_new$category_id)
 Category_new$parent_id <- as.character(Category_new$parent_id)
 
 
-Customer_new <- readr::read_csv("/cloud/project/new_data/customer_data_new.csv")
+Customer_new <- readr::read_csv("new_data/customer_data_new.csv")
 Customer_new$customer_id <- as.character(Customer_new$customer_id)
 
 
-Supplier_new <- readr::read_csv("/cloud/project/new_data/supplier_data_new.csv")
+Supplier_new <- readr::read_csv("new_data/supplier_data_new.csv")
 Supplier_new$seller_id <- as.character(Supplier_new$seller_id)
 
 
-Warehouse_new <- readr::read_csv("/cloud/project/new_data/warehouse_data_new.csv")
+Warehouse_new <- readr::read_csv("new_data/warehouse_data_new.csv")
 Warehouse_new$warehouse_id <- as.character(Warehouse_new$warehouse_id)
 
 
-Product_new <- readr::read_csv("/cloud/project/new_data/product_data_new.csv")
+Product_new <- readr::read_csv("new_data/product_data_new.csv")
 Product_new$product_id <- as.character(Product_new$product_id)
 Product_new$seller_id <- as.character(Product_new$seller_id)
 Product_new$warehouse_id <- as.character(Product_new$warehouse_id)
 Product_new$category_id <- as.character(Product_new$category_id)
 
 
-Shipment_new <- readr::read_csv("/cloud/project/new_data/shipment_data_new.csv")
+Shipment_new <- readr::read_csv("new_data/shipment_data_new.csv")
 Shipment_new$shipment_id <- as.character(Shipment_new$shipment_id)
 
 
-Orders_new <- readr::read_csv("/cloud/project/new_data/order_data_new.csv")
+Orders_new <- readr::read_csv("new_data/order_data_new.csv")
 
 Orders_new$order_date <- as.Date(Orders_new$order_date, format = "%Y/%m/%d")
 Orders_new$order_date <- as.character(Orders_new$order_date)
