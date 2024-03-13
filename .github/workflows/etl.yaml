@@ -26,10 +26,10 @@ jobs:
       - name: Install packages
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          Rscript -e 'install.packages(c("ggplot2"))'
+          Rscript -e 'install.packages(c("readr","ggplot2","RSQLite", "dplyr","chron"))'
       - name: Execute R script
         run: |
-          Rscript DataManagement.R
+          Rscript DataManagement31.R
       - name: Add files
         run: |
           git config --global user.email "meimelody1129@gmail.com"
