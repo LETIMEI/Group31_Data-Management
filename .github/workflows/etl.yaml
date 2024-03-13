@@ -28,7 +28,7 @@ jobs:
           Rscript -e "install.packages(c('readr', 'RSQLite', 'dplyr', 'chron', 'ggplot2'))"
 
       - name: Render R Markdown
-        run: Rscript -e "rmarkdown::render('your_file.Rmd')"
+        run: Rscript -e "rmarkdown::render('DataManagement31.Rmd')"
 
       - name: Commit rendered output
         uses: EndBug/add-and-commit@v7
