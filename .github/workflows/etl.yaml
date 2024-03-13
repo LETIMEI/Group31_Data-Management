@@ -1,18 +1,39 @@
-name: Group31 Workflow
+name: Run R Markdown Workflow
 
 on:
-#  schedule:
-#    - cron: '0 */3 * * *' # Run every 3 hours
   push:
-    branches: [ main ]
-    
+    branches:
+      - Group31_Data-Management
+  pull_request:
+    branches:
+      - Group31_Data-Management
+  schedule:
+    - cron: "0 0 * * *"  # Schedule the workflow to run daily at midnight
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup R environment
-        uses: r-lib/actions/setup-r@v2
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v1
         with:
-          r-version: '4.2.0'
+          r-version: '4.x'  # Specify the R version you need
+
+      - name: Set up Pandoc
+        uses: r-lib/actions/setup-pandoc@v1
+
+      - name: Install R packages
+        run: |
+          Rscript -e "install.packages(c('readr', 'RSQLite', 'dplyr', 'chron', 'ggplot2'))"
+
+      - name: Render R Markdown
+        run: Rscript -e "rmarkdown::render('DataManagement31.Rmd')"
+
+      - name: Commit rendered output
+        uses: EndBug/add-and-commit@v7
+        with:
+          message: Rendered R Markdown output
+          add: '*.html'
