@@ -1,0 +1,6 @@
+category_id,category_name,parent_id,parent_name
+53,Denim,,
+54,Denim-Tote-Bag,53,Denim
+55,Denim-Sleeveless-Skirt,53,Denim
+56,Denim-Vest,53,Denim
+57,Denim-Jumpsuit,53,Denim
