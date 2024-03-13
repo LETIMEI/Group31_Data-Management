@@ -27,3 +27,143 @@ my_connection <- RSQLite::dbConnect(RSQLite::SQLite(),"e-commerce.db")
                             
 ```
 
+Create Category table
+
+```{sql connection=my_connection}
+DROP TABLE IF EXISTS Category;
+```
+
+```{sql connection=my_connection}
+CREATE TABLE IF NOT EXISTS Category(
+  category_id VARCHAR(20) PRIMARY KEY NOT NULL,
+  category_name VARCHAR (20) NOT NULL,
+  parent_id INT,
+  parent_name VARCHAR (20)
+  );
+  
+```
+
+Create Customer table
+
+```{sql connection=my_connection}
+DROP TABLE IF EXISTS Customer;
+```
+
+```{sql connection=my_connection}
+CREATE TABLE IF NOT EXISTS Customer(
+  customer_id VARCHAR(50) PRIMARY KEY NOT NULL,
+  email VARCHAR (100) NOT NULL,
+  first_name VARCHAR (100) NOT NULL,
+  last_name VARCHAR (100) NOT NULL,
+  street_name VARCHAR (100) NOT NULL,
+  post_code VARCHAR(64) NOT NULL,
+  city VARCHAR (100) NOT NULL,
+  password_c VARCHAR (10) NOT NULL, 
+  phone_number INT (11) NOT NULL,
+  referral_by VARCHAR(20)
+  );
+```
+
+Create Supplier table
+
+```{sql connection=my_connection}
+DROP TABLE IF EXISTS Supplier;
+```
+
+```{sql connection=my_connection}
+CREATE TABLE IF NOT EXISTS Supplier (
+    seller_id VARCHAR(50) PRIMARY KEY NOT NULL,
+    seller_store_name VARCHAR(100),
+    supplier_email VARCHAR(255),
+    password_s VARCHAR(255),
+    receiving_bank VARCHAR(50),
+    seller_rating INT,
+    seller_phone_number VARCHAR(20),
+    seller_address_street VARCHAR(255),
+    s_post_code VARCHAR(50),
+    s_city VARCHAR(50)
+    );
+
+```
+
+Create Warehouse table
+
+```{sql connection=my_connection}
+DROP TABLE IF EXISTS Warehouse;
+```
+
+```{sql connection=my_connection}
+CREATE TABLE IF NOT EXISTS Warehouse (
+    warehouse_id VARCHAR(50) PRIMARY KEY NOT NULL,
+    capacity INT,
+    current_stock INT,
+    w_city VARCHAR(50),
+    w_post_code VARCHAR(50),
+    w_address_street VARCHAR(255)
+    );
+```
+
+Create Product table
+
+```{sql connection=my_connection}
+DROP TABLE IF EXISTS Product;
+
+```
+
+```{sql connection=my_connection}
+CREATE TABLE IF NOT EXISTS Product (
+  product_id INT PRIMARY KEY NOT NULL,
+  product_name VARCHAR(50),
+  category_id VARCHAR(20),
+  warehouse_id VARCHAR(50),
+  seller_id VARCHAR(50),
+  product_weight FLOAT,
+  product_price FLOAT,
+  product_size VARCHAR(20),
+  FOREIGN KEY (seller_id) REFERENCES Supplier(seller_id)
+  FOREIGN KEY (category_id) REFERENCES Category(category_id),
+  FOREIGN KEY (warehouse_id) REFERENCES Warehouse(warehouse_id)
+  );
+```
+
+Create Shipment table
+
+```{sql connection=my_connection}
+DROP TABLE IF EXISTS Shipment;
+
+```
+
+```{sql connection=my_connection}
+CREATE TABLE IF NOT EXISTS Shipment (
+    shipment_id VARCHAR(50) PRIMARY KEY NOT NULL,
+    shipping_method VARCHAR(50),
+    shipping_charge FLOAT
+    );
+```
+
+Create Orders table
+
+```{sql connection=my_connection}
+DROP TABLE IF EXISTS Orders;
+```
+
+```{sql connection=my_connection}
+CREATE TABLE IF NOT EXISTS Orders (
+    order_id VARCHAR(50) NOT NULL,
+    order_date DATE NOT NULL,
+    order_status VARCHAR(50),
+    quantity_of_product_ordered INT,
+    payment_method VARCHAR(50),
+    voucher_value INT,
+    review_rating INT,
+    shipment_id VARCHAR(50),
+    product_id VARCHAR(50) NOT NULL,
+    customer_id VARCHAR(50) NOT NULL,
+    PRIMARY KEY (order_id, customer_id, product_id),
+
+    FOREIGN KEY (shipment_id) REFERENCES Shipment(shipment_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id)
+    );
+    
+```
