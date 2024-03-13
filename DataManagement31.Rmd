@@ -1,0 +1,29 @@
+---
+title: "Data Management Group Assignment"
+output: html_document
+date: "2024-03-07"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,comment=NA,attr.source='.numberLines')
+
+rm(list=ls())
+#install.packages("readr")
+#install.packages("RSQLite")
+#install.packages("dplyr")
+install.packages("chron")
+install.packages("ggplot2")
+library(readr)
+library(RSQLite)
+library(dplyr)
+library(chron)
+library(ggplot2)
+```
+
+```{r connect}
+my_connection <- RSQLite::dbConnect(RSQLite::SQLite(),"e-commerce.db")
+                            
+```
+
