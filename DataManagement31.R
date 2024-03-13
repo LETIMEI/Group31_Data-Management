@@ -308,3 +308,64 @@ this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Product_Price_Distribution_",
               this_filename_date,"_",
               this_filename_time,".png"))
+
+
+
+city_counts <- Customer %>%
+  group_by(city) %>%
+  summarise(num_customers = n())
+
+# Plot the counts
+ggplot(city_counts, aes(x = reorder(city, -num_customers), y = num_customers)) +
+  geom_bar(stat = "identity") +
+  labs(x = "City", y = "Number of Customers",
+       title = "Number of Customers in Each City") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+this_filename_date <- as.character(Sys.Date())
+
+# format the Sys.time() to show only hours and minutes 
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+
+ggsave(paste0("figures/Customer_Distribution_",
+              this_filename_date,"_",
+              this_filename_time,".png"))
+
+
+# Calculate the average rating for each product
+class(Orders$review_rating)
+Orders$review_rating <- as.numeric(Orders$review_rating)
+product_ratings <- Orders %>%
+  group_by(product_id) %>%
+  summarise(avg_rating = mean(review_rating, na.rm = TRUE))
+
+# Sort products by average rating in descending order
+product_ratings <- product_ratings[order(-product_ratings$avg_rating),]
+
+top_products <- product_ratings[product_ratings$avg_rating == 5,]
+
+
+ggplot(product_ratings, aes(x = reorder(product_id, -avg_rating), y = avg_rating, fill = factor(product_id %in% top_products$product_id))) +
+  geom_bar(stat = "identity") +
+  labs(x = "Product ID", y = "Average Rating",
+       title = "Average Rating for Each Product") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0)) +
+  scale_fill_manual(values = c("grey80", "darkred"), guide = FALSE)
+
+this_filename_date <- as.character(Sys.Date())
+
+# format the Sys.time() to show only hours and minutes 
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+
+ggsave(paste0("figures/Product_Avg_Rating_",
+              this_filename_date,"_",
+              this_filename_time,".png"))
+
+
+
+
+
+
+
