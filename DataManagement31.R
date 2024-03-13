@@ -288,6 +288,16 @@ ggsave(paste0("figures/Warehouse_Capacity_", this_filename_date, "_", this_filen
 
 
 
+# Calculate the mean price
+mean_price <- mean(Product$product_price)
+
+# Create the histogram
+ggplot(Product, aes(x = product_price)) +
+  geom_histogram(binwidth = 1, position = "identity") +
+  geom_vline(xintercept = mean_price, linetype = "dotted", color = "darkred") +  # Add the mean line
+  labs(x = "Product Price", y = "Frequency", fill = "Category ID",
+       title = "Distribution of Product Prices by Category") +
+  theme_minimal()
 
 
 this_filename_date <- as.character(Sys.Date())
@@ -295,8 +305,6 @@ this_filename_date <- as.character(Sys.Date())
 # format the Sys.time() to show only hours and minutes 
 this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 
-ggsave(paste0("figures/Warehouse_Capacity_",
+ggsave(paste0("figures/Product_Price_Distribution_",
               this_filename_date,"_",
               this_filename_time,".png"))
-
-
