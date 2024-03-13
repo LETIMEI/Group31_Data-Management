@@ -1,9 +1,8 @@
-knitr::opts_chunk$set(echo = TRUE,comment=NA,attr.source='.numberLines')
 
 rm(list=ls())
-#install.packages("readr")
-#install.packages("RSQLite")
-#install.packages("dplyr")
+install.packages("readr")
+install.packages("RSQLite")
+install.packages("dplyr")
 install.packages("chron")
 install.packages("ggplot2")
 library(readr)
@@ -11,7 +10,6 @@ library(RSQLite)
 library(dplyr)
 library(chron)
 library(ggplot2)
-library(rmarkdown)
 
 my_connection <- RSQLite::dbConnect(RSQLite::SQLite(),"e-commerce.db")
 
