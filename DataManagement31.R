@@ -265,9 +265,16 @@ ORDER BY
     total_value DESC;
     ")
 
-barplot(Warehouse$capacity, col = "steelblue", ylim = c(0, max(Warehouse$capacity, Warehouse$current_stock)),
+warehouse_capacity <- barplot(Warehouse$capacity, col = "steelblue", ylim = c(0, max(Warehouse$capacity, Warehouse$current_stock)),
         main = "Warehouse Capacity and Current Stock", xlab = "Warehouse ID", ylab = "Quantity")
 barplot(Warehouse$current_stock, col = "lightpink", add = TRUE)
 legend("topright", legend = c("Capacity", "Current Stock"), fill = c("steelblue", "lightpink"))
 
+this_filename_date <- as.character(Sys.Date())
 
+# format the Sys.time() to show only hours and minutes 
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+
+ggsave(paste0("figures/Warehouse_Capacity_",
+              this_filename_date,"_",
+              this_filename_time,".png"))
