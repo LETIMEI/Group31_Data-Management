@@ -1,4 +1,4 @@
-name: Update Repos
+name: Update Repo with result
 
 on:
 #  schedule:
@@ -26,12 +26,20 @@ jobs:
       - name: Install packages
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          Rscript -e 'install.packages(c("rmarkdown", "readr", "RSQLite", "dplyr", "chron", "ggplot2"))'
-      - name: Render R Markdown
-        run: Rscript DataManagement31.Rmd
-
-      - name: Commit rendered output
-        uses: EndBug/add-and-commit@v7
+          Rscript -e 'install.packages(c("ggplot2"))'
+      - name: Execute R script
+        run: |
+          Rscript DataManagement.R
+      - name: Add files
+        run: |
+          git config --global user.email "meimelody1129@gmail.com"
+          git config --global user.name "LETIMEI"
+          git add --all figures/
+      - name: Commit files
+        run: |
+          git commit -m "Add regression plot figure"
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
         with:
-          message: Rendered R Markdown output
-          add: '*.html'
+            github_token: ${{ secrets.my_token }}
+            branch: master
