@@ -265,10 +265,30 @@ ORDER BY
     total_value DESC;
     ")
 
-warehouse_capacity <- barplot(Warehouse$capacity, col = "steelblue", ylim = c(0, max(Warehouse$capacity, Warehouse$current_stock)),
-        main = "Warehouse Capacity and Current Stock", xlab = "Warehouse ID", ylab = "Quantity")
-barplot(Warehouse$current_stock, col = "lightpink", add = TRUE)
-legend("topright", legend = c("Capacity", "Current Stock"), fill = c("steelblue", "lightpink"))
+warehouse_data <- data.frame(
+  Warehouse_ID = 1:nrow(Warehouse),  # Assuming Warehouse has an ID column
+  Capacity = Warehouse$capacity,
+  Current_Stock = Warehouse$current_stock
+)
+
+# Create the ggplot object
+ggplot(warehouse_data, aes(x = Warehouse_ID)) +
+  geom_bar(aes(y = Capacity), stat = "identity", fill = "steelblue", alpha = 0.8) +
+  geom_bar(aes(y = Current_Stock), stat = "identity", fill = "lightpink", alpha = 0.8) +
+  labs(title = "Warehouse Capacity and Current Stock", x = "Warehouse ID", y = "Quantity") +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  scale_fill_manual(values = c("steelblue", "lightpink"), labels = c("Capacity", "Current Stock")) +
+  guides(fill = guide_legend(title = "Legend"))
+
+# Save the plot as an image
+this_filename_date <- as.character(Sys.Date())
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+ggsave(paste0("figures/Warehouse_Capacity_", this_filename_date, "_", this_filename_time, ".png"))
+
+
+
+
 
 this_filename_date <- as.character(Sys.Date())
 
@@ -278,3 +298,5 @@ this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Warehouse_Capacity_",
               this_filename_date,"_",
               this_filename_time,".png"))
+
+
