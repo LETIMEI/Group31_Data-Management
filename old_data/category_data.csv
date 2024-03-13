@@ -1,0 +1,53 @@
+category_id,category_name,parent_id,parent_name
+1,Tops,,
+2,T-shirt,1,Tops
+3,Shirt,1,Tops
+4,Sweater,1,Tops
+5,Hoodie,1,Tops
+6,Jacket,1,Tops
+7,Coat,1,Tops
+8,Blouse,1,Tops
+9,Vest,1,Tops
+10,Tank top,1,Tops
+11,Cardigan,1,Tops
+12,Dresses,,
+13,Leopard print dress,12,Dresses
+14,Polka dot dress,12,Dresses
+15,Plain dress,12,Dresses
+16,All over print dress,12,Dresses
+17,Striped dress,12,Dresses
+18,Plaid dress,12,Dresses
+19,Casual dress,12,Dresses
+20,Mini dress,12,Dresses
+21,Midi dress,12,Dresses
+22,Bottoms,,
+23,Long skirt,22,Bottoms
+24,Short skirt,22,Bottoms
+25,Leggings,22,Bottoms
+26,Shorts,22,Bottoms
+27,Sweatpants,22,Bottoms
+28,Jeans,22,Bottoms
+29,Cargo pants,22,Bottoms
+30,Sleepwear,,
+31,Pajama set,30,Sleepwear
+32,Romper,30,Sleepwear
+33,Robe,30,Sleepwear
+34,Beachwear,,
+35,Bikini set,34,Beachwear
+36,One-piece,34,Beachwear
+37,Tankini,34,Beachwear
+38,Swim dress,34,Beachwear
+39,Inner Beauty,,
+40,Lingerie,39,Inner Beauty
+41,Bra,39,Inner Beauty
+42,Shapewear,39,Inner Beauty
+43,Accessories,,
+44,Socks,43,Accessories
+45,Hat,43,Accessories
+46,Belt,43,Accessories
+47,Scarf,43,Accessories
+48,Gloves,43,Accessories
+49,Hairband,43,Accessories
+50,Bow tie,43,Accessories
+51,Suspenders,43,Accessories
+52,Ear muffs,43,Accessories
