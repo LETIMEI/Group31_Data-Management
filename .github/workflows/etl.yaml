@@ -26,7 +26,7 @@ jobs:
       - name: Install packages
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          Rscript -e 'install.packages(c("readr", "RSQLite", "dplyr", "chron", "ggplot2"))'
+          Rscript -e 'install.packages(c("rmarkdown", "readr", "RSQLite", "dplyr", "chron", "ggplot2"))'
       - name: Render R Markdown
         run: Rscript -e "rmarkdown::render('DataManagement31.Rmd')"
 
