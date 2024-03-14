@@ -254,16 +254,142 @@ RSQLite::dbExecute(my_connection, "
 SELECT 
     o.order_id,
     o.customer_id,
-    SUM(o.quantity_of_product_ordered * (p.product_price - o.voucher_value)) AS total_value
+    SUM(o.quantity_of_product_ordered * (p.product_price - o.voucher_value)) AS total_value,
+    s.shipping_charge
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Shipment s ON o.shipment_id = s.shipment_id
+GROUP BY 
+    o.order_id, o.customer_id, s.shipping_charge
+ORDER BY 
+    total_value DESC;
+    ")
+
+RSQLite::dbExecute(my_connection, "
+SELECT 
+    p.product_id,
+    p.product_name,
+    SUM(o.quantity_of_product_ordered) AS total_sold
 FROM 
     Orders o
 JOIN 
     Product p ON o.product_id = p.product_id
 GROUP BY 
-    o.order_id
+    p.product_id, p.product_name
 ORDER BY 
-    total_value DESC;
+    total_sold DESC;")
+
+RSQLite::dbExecute(my_connection, "
+SELECT 
+    c.category_id,
+    c.category_name,
+    COUNT(o.quantity_of_product_ordered) AS total_sold_unit
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Category c ON p.category_id = c.category_id
+GROUP BY 
+    c.category_id, c.category_name
+ORDER BY 
+    total_sold_unit DESC;
     ")
+
+top_categ <- RSQLite::dbGetQuery(my_connection,"SELECT 
+    pc.category_id AS parent_category_id,
+    pc.category_name AS parent_category_name,
+    c.category_id,
+    c.category_name,
+    COUNT(o.quantity_of_product_ordered) AS total_sold_unit
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Category c ON p.category_id = c.category_id
+JOIN 
+    Category pc ON c.parent_id = pc.category_id
+GROUP BY 
+    pc.category_id, pc.category_name, c.category_id, c.category_name
+ORDER BY 
+    pc.category_id, total_sold_unit DESC;
+")
+
+ggplot(top_categ, aes(x = category_name, y = total_sold_unit, fill = parent_category_name)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Category", y = "Total Sold Units", title = "Total Sold Units by Category") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Parent Category")
+
+# Save the plot as an image
+this_filename_date <- as.character(Sys.Date())
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+ggsave(paste0("figures/Category_Sales_", this_filename_date, "_", this_filename_time, ".png"))
+
+top_parent_categ <- RSQLite::dbGetQuery(my_connection,"
+                                        SELECT 
+    pc.category_id AS parent_category_id,
+    pc.category_name AS parent_category_name,
+    SUM(o.quantity_of_product_ordered) AS total_sold_unit
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Category c ON p.category_id = c.category_id
+JOIN 
+    Category pc ON c.parent_id = pc.category_id
+GROUP BY 
+    pc.category_id, pc.category_name
+ORDER BY 
+    total_sold_unit DESC;
+")
+
+ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit #, fill = parent_category_name
+)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Parent Category", y = "Total Sold Units", title = "Total Sold Units by Parent Category") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Parent Category")
+
+# Save the plot as an image
+this_filename_date <- as.character(Sys.Date())
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+ggsave(paste0("figures/Parent_Category_Sales_", this_filename_date, "_", this_filename_time, ".png"))
+
+top_recommender <- RSQLite::dbGetQuery(my_connection,"SELECT 
+    c1.customer_id AS customer_id,
+    CONCAT(c1.first_name, ' ', c1.last_name) AS customer_name,
+    COUNT(c2.referral_by) AS referred_number
+FROM 
+    Customer c1
+LEFT JOIN 
+    Customer c2 ON c1.customer_id = c2.referral_by
+GROUP BY 
+    c1.customer_id, c1.first_name, c1.last_name
+ORDER BY 
+    referred_number DESC
+LIMIT 20;
+")
+
+ggplot(top_recommender, aes(x = customer_name, y = referred_number)) +
+  geom_bar(stat = "identity", fill = "skyblue") +  # Bar plot with skyblue color
+  labs(x = "Customer Name", y = "Number of Referrals", title = "Top 20 Recommenders") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip() 
+
+# Save the plot as an image
+this_filename_date <- as.character(Sys.Date())
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+ggsave(paste0("figures/Top_Recommenders_", this_filename_date, "_", this_filename_time, ".png"))
+
 
 warehouse_data <- data.frame(
   Warehouse_ID = 1:nrow(Warehouse),  # Assuming Warehouse has an ID column
