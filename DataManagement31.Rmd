@@ -10,6 +10,17 @@ chunk_output_type: console
 
 >>>>>>> 61b49273c2c69a33c1fc130db359f453a1872bcf
 
+# E-R Diagram Design
+
+## Assumption Made for Cardinality
+
+## Relationship Sets
+
+# SQL Database Schema Creation
+logical schema
+
+# Data Import and Quality Check
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,comment=NA,attr.source='.numberLines')
 
@@ -419,7 +430,6 @@ ggplot(top_categ, aes(x = category_name, y = total_sold_unit, fill = parent_cate
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_discrete(name = "Parent Category")
 ```
-
 
 
 ```{r}
