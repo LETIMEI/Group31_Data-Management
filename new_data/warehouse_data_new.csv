@@ -1,51 +1,51 @@
 warehouse_id,capacity,current_stock,w_city,w_post_code,w_address_street
-899,79364,55616,Glasgow,G2,4096 Lopez Islands
-673,61064,28844,Inverness,IV2,82960 Barry Gardens
-711,75843,26922,Dundee,DD1,251 Miller Course Apt. 256
-956,58064,36673,Biggar,ML12,04178 Watson Viaduct Apt. 787
-518,96327,84823,Edinburgh,EH8,7396 Michael Center
-625,73672,34447,Kirkcaldy,KY1,377 Brown Spurs Apt. 285
-558,98000,734,Edinburgh,EH1,7039 Karen Shoals Suite 962
-849,28850,22320,Dumfries,DG1,123 Marshall Prairie Suite 735
-671,31069,10487,Dundee,DD1,34136 Knox Forges Suite 133
-992,86893,84156,Castle Douglas,DG6,85971 Travis Estates Apt. 662
-936,28721,15187,Montrose,DD10,8016 Williams Extension
-599,40734,6518,Inverness,IV2,61804 Xavier Trace Suite 127
-864,49152,33079,Motherwell,ML1,5631 Brian Bypass
-724,89908,85538,Aberdeen,AB22,34086 Allen Freeway Suite 007
-597,33611,25289,Kilmarnock,KA1,878 Rose Turnpike
-680,82228,47076,Aberdeen,AB22,99883 Jonathan Coves Suite 540
-555,53278,15070,Montrose,DD10,4132 Shields Squares Suite 354
-973,97525,11089,Inverness,IV1,9005 Amanda Burgs
-800,92616,89755,Kilmarnock,KA1,4387 Elizabeth Spur Suite 144
-743,62567,3851,Kilmarnock,KA1,4786 William Corners Suite 224
-765,88877,55083,Inverness,IV2,3670 Holly Cliff Apt. 787
-937,21207,8746,Gourock,PA19,75199 Deborah Harbor Suite 258
-871,82743,39676,Edinburgh,EH8,170 Tammy Plaza
-843,38707,38613,Inverness,IV1,8064 Cole Orchard Apt. 994
-535,33927,25711,Inverness,IV1,8555 Williams Knoll
-679,81011,65990,Kilmarnock,KA1,67725 Lindsey Extensions Suite 723
-983,55734,5557,Kirkcaldy,KY1,8976 Martinez Mall
-761,64775,8794,Edinburgh,EH8,376 Adams Stream
-600,25065,11877,Gourock,PA19,78578 Virginia Lock
-882,97003,81340,Aberdeen,AB10,38271 Craig Spurs
-771,79826,38109,Paisley,PA1,3549 Love Mission Apt. 043
-751,80848,9182,Glenrothes,KY7,96841 Carol Springs Apt. 558
-635,82158,55376,Biggar,ML12,057 Jimenez Trail Apt. 570
-915,20059,2916,Paisley,PA1,56643 Gray Camp
-557,59155,14257,Biggar,ML12,14742 Robin Streets Suite 391
-556,63026,38820,Inverness,IV2,9051 William Mill
-506,69327,49770,Dumfries,DG1,97387 Joanna Stream Suite 752
-938,91908,55602,Motherwell,ML1,714 Martin Curve Suite 395
-564,36779,6098,Kilmarnock,KA1,4831 Rhonda Causeway Suite 111
-655,55669,2753,Glasgow,G2,788 Dale Manors
-596,66861,38288,Inverness,IV2,845 Thomas Street
-517,78120,61734,Castle Douglas,DG6,264 Shannon Springs Suite 852
-900,46251,21471,Biggar,ML12,69511 Kennedy Springs Suite 322
-952,23635,2492,Aberdeen,AB10,8233 Wilson Plains
-907,58884,9176,Inverness,IV2,43663 Charles Curve
-933,90941,76071,Motherwell,ML1,9438 Stark Station
-616,54730,36617,Biggar,ML12,40868 Richards Land
-801,99399,21578,Inverness,IV2,402 Buckley Parkways
-717,78610,56897,Inverness,IV2,32439 Tammy Shore
-614,49490,27632,Inverness,IV1,250 Joseph Village Apt. 745
+584,93853,10260,Glasgow,G2,74274 Cindy Radial Apt. 306
+542,34280,29959,Paisley,PA1,301 Michael Valleys
+703,73516,70756,Edinburgh,EH8,54563 King Road
+909,55602,13913,Montrose,DD10,40264 Charles Course
+744,89672,14767,Dumfries,DG1,4708 Debra Via Suite 201
+638,63224,52709,Castle Douglas,DG6,92316 Blake Motorway
+737,22023,13448,Kirkcaldy,KY1,5290 Dorothy Ville Suite 074
+827,69487,7354,Motherwell,ML1,5254 Freeman Landing
+628,81647,52616,Aberdeen,AB22,7111 Christopher Port
+755,38781,16083,Dumfries,DG1,34191 Mcdaniel Centers
+989,68972,60852,Edinburgh,EH1,970 Horne Summit Suite 912
+790,82606,48720,Inverness,IV2,6862 Phillips Street Suite 696
+952,71159,37039,Castle Douglas,DG6,58627 Wilson River
+631,97752,91835,Gourock,PA19,2995 Watson Grove
+953,77720,5005,Glenrothes,KY7,36062 Shannon Springs Apt. 701
+576,81948,58715,Kilmarnock,KA1,659 Scott Prairie Apt. 679
+565,93159,82869,Kilmarnock,KA1,916 Martin Mountain
+887,92614,89911,Edinburgh,EH1,83657 Robinson Ferry
+820,68646,33083,Castle Douglas,DG6,1748 Hanson Roads
+572,43507,36448,Glasgow,G2,5939 Howard Fall Suite 314
+868,51057,36053,Glasgow,G2,504 Ramos Harbors Apt. 467
+971,69609,16642,Dumfries,DG1,2229 Sanders Track Apt. 523
+924,83959,52463,Ardrossan,KA22,9143 Donald Parks
+766,31146,25198,Dundee,DD1,83703 Tyler Loop
+651,28554,14151,Aberdeen,AB22,5941 Savannah Divide
+746,87872,14784,Kirkcaldy,KY1,2387 Carter Highway Apt. 535
+986,75498,4287,Montrose,DD10,34462 Christine Crescent Apt. 315
+711,57318,14754,Kilmarnock,KA1,710 Vaughan Rapid Apt. 020
+664,20523,7178,Ardrossan,KA22,5864 Huang Crossing Apt. 313
+926,81262,10537,Castle Douglas,DG6,68480 Joshua Ridges Apt. 863
+897,62333,22708,Edinburgh,EH1,11846 Garrett Gardens Suite 283
+601,91252,40239,Dumfries,DG1,33862 Debra Ridges
+729,20106,7735,Aberdeen,AB22,4458 Flowers Key
+978,41863,33251,Inverness,IV1,379 Graham Locks
+507,52522,29776,Motherwell,ML1,1661 Nicole Avenue
+962,72215,6551,Edinburgh,EH8,80023 Choi Overpass Apt. 764
+961,38762,13177,Edinburgh,EH1,101 Estes Fort Apt. 013
+720,97159,79662,Ardrossan,KA22,31485 Anita Branch
+741,74889,70004,Montrose,DD10,522 Mayo Street Suite 593
+678,62562,27017,Glasgow,G1,284 Andrew Lakes Apt. 758
+959,96545,76979,Edinburgh,EH1,48836 Hodge Shore Apt. 758
+780,51778,17429,Ardrossan,KA22,6656 Adams Turnpike Apt. 316
+826,29295,24159,Castle Douglas,DG6,21015 Johnson Springs
+590,81636,75743,Edinburgh,EH1,91020 Rivers Gateway
+554,25352,19458,Edinburgh,EH1,812 Davis Mews Apt. 906
+714,25517,13911,Inverness,IV2,797 Michael Cliff
+586,64631,41778,Kirkcaldy,KY1,129 Amy Meadows Apt. 071
+543,34102,2709,Aberdeen,AB22,18188 Robert Grove
+947,30131,6940,Kilmarnock,KA1,13569 Jennifer Isle
+960,61867,17527,Edinburgh,EH8,684 Donald Vista
