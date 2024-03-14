@@ -24,7 +24,6 @@ library(RSQLite)
 library(dplyr)
 library(chron)
 library(ggplot2)
-library(rmarkdown)
 ```
 
 ```{r connect}
@@ -65,7 +64,7 @@ CREATE TABLE IF NOT EXISTS Customer(
   city VARCHAR (100) NOT NULL,
   password_c VARCHAR (10) NOT NULL, 
   phone_number INT (11) NOT NULL,
-  referral_by VARCHAR(20)
+  referral_by VARCHAR(50)
   );
 ```
 
@@ -172,8 +171,6 @@ CREATE TABLE IF NOT EXISTS Orders (
     );
     
 ```
-<<<<<<< HEAD
-
 
 Read .csv files in (old data)
 
@@ -185,6 +182,7 @@ Category$parent_id <- as.character(Category$parent_id)
 
 Customer <- readr::read_csv("/cloud/project/old_data/customer_data.csv")
 Customer$customer_id <- as.character(Customer$customer_id)
+Customer$referral_by <- as.character(Customer$referral_by)
 
 
 Supplier <- readr::read_csv("/cloud/project/old_data/supplier_data.csv")
@@ -232,7 +230,7 @@ RSQLite::dbWriteTable(my_connection,"Orders",Orders,append=TRUE)
 
 ```
 
-Use this to verify the table we created
+Use this to verify the table we created (check primary key, column name, data type)
 
 ```{sql connection=my_connection}
 PRAGMA table_info(Orders);
@@ -249,6 +247,7 @@ Category_new$parent_id <- as.character(Category_new$parent_id)
 
 Customer_new <- readr::read_csv("/cloud/project/new_data/customer_data_new.csv")
 Customer_new$customer_id <- as.character(Customer_new$customer_id)
+Customer_new$referral_by <- as.character(Customer_new$referral_by)
 
 
 Supplier_new <- readr::read_csv("/cloud/project/new_data/supplier_data_new.csv")
@@ -278,8 +277,6 @@ Orders_new$order_id <- as.character(Orders_new$order_id)
 Orders_new$customer_id <- as.character(Orders_new$customer_id)
 Orders_new$product_id <- as.character(Orders_new$product_id)
 Orders_new$shipment_id <- as.character(Orders_new$shipment_id)
-
-#db exucute query
 
 ```
 
@@ -323,21 +320,185 @@ LIMIT 10
 Data analysis and visualization
 
 Rank order value from highest to lowest
-
 ```{sql connection=my_connection}
 SELECT 
     o.order_id,
     o.customer_id,
-    SUM(o.quantity_of_product_ordered * (p.product_price - o.voucher_value)) AS total_value
+    SUM(o.quantity_of_product_ordered * (p.product_price - o.voucher_value)) AS total_value,
+    s.shipping_charge
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Shipment s ON o.shipment_id = s.shipment_id
+GROUP BY 
+    o.order_id, o.customer_id, s.shipping_charge
+ORDER BY 
+    total_value DESC;
+```
+Rank product by their sold quantity
+```{sql connection=my_connection}
+SELECT 
+    p.product_id,
+    p.product_name,
+    SUM(o.quantity_of_product_ordered) AS total_sold
 FROM 
     Orders o
 JOIN 
     Product p ON o.product_id = p.product_id
 GROUP BY 
-    o.order_id
+    p.product_id, p.product_name
 ORDER BY 
-    total_value DESC;
+    total_sold DESC;
 ```
+Rank categories by sold quantity
+```{sql connection=my_connection}
+SELECT 
+    c.category_id,
+    c.category_name,
+    COUNT(o.quantity_of_product_ordered) AS total_sold_unit
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Category c ON p.category_id = c.category_id
+GROUP BY 
+    c.category_id, c.category_name
+ORDER BY 
+    total_sold_unit DESC;
+```
+
+```{sql connection=my_connection}
+SELECT 
+    pc.category_id AS parent_category_id,
+    pc.category_name AS parent_category_name,
+    SUM(o.quantity_of_product_ordered) AS total_sold_unit
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Category c ON p.category_id = c.category_id
+JOIN 
+    Category pc ON c.parent_id = pc.category_id
+GROUP BY 
+    pc.category_id, pc.category_name
+ORDER BY 
+    total_sold_unit DESC;
+```
+
+```{r}
+top_categ <- RSQLite::dbGetQuery(my_connection,"SELECT 
+    pc.category_id AS parent_category_id,
+    pc.category_name AS parent_category_name,
+    c.category_id,
+    c.category_name,
+    COUNT(o.quantity_of_product_ordered) AS total_sold_unit
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Category c ON p.category_id = c.category_id
+JOIN 
+    Category pc ON c.parent_id = pc.category_id
+GROUP BY 
+    pc.category_id, pc.category_name, c.category_id, c.category_name
+ORDER BY 
+    pc.category_id, total_sold_unit DESC;
+")
+```
+
+```{r}
+ggplot(top_categ, aes(x = category_name, y = total_sold_unit, fill = parent_category_name)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Category", y = "Total Sold Units", title = "Total Sold Units by Category") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Parent Category")
+```
+
+
+
+```{r}
+top_parent_categ <- RSQLite::dbGetQuery(my_connection,"
+                                        SELECT 
+    pc.category_id AS parent_category_id,
+    pc.category_name AS parent_category_name,
+    SUM(o.quantity_of_product_ordered) AS total_sold_unit
+FROM 
+    Orders o
+JOIN 
+    Product p ON o.product_id = p.product_id
+JOIN 
+    Category c ON p.category_id = c.category_id
+JOIN 
+    Category pc ON c.parent_id = pc.category_id
+GROUP BY 
+    pc.category_id, pc.category_name
+ORDER BY 
+    total_sold_unit DESC;
+")
+```
+
+
+```{r}
+ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit #, fill = parent_category_name
+                             )) +
+  geom_bar(stat = "identity") +
+  labs(x = "Parent Category", y = "Total Sold Units", title = "Total Sold Units by Parent Category") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Parent Category")
+```
+
+
+
+Rank customer by the number of other customers they referred.
+```{sql connection=my_connection}
+SELECT 
+    c1.customer_id AS customer_id,
+    CONCAT(c1.first_name, ' ', c1.last_name) AS customer_name,
+    COUNT(c2.referral_by) AS referred_number
+FROM 
+    Customer c1
+LEFT JOIN 
+    Customer c2 ON c1.customer_id = c2.referral_by
+GROUP BY 
+    c1.customer_id, c1.first_name, c1.last_name
+ORDER BY 
+    referred_number DESC;
+```
+
+```{r}
+top_recommender <- RSQLite::dbGetQuery(my_connection,"SELECT 
+    c1.customer_id AS customer_id,
+    CONCAT(c1.first_name, ' ', c1.last_name) AS customer_name,
+    COUNT(c2.referral_by) AS referred_number
+FROM 
+    Customer c1
+LEFT JOIN 
+    Customer c2 ON c1.customer_id = c2.referral_by
+GROUP BY 
+    c1.customer_id, c1.first_name, c1.last_name
+ORDER BY 
+    referred_number DESC
+LIMIT 20;
+")
+```
+
+```{r}
+ggplot(top_recommender, aes(x = customer_name, y = referred_number)) +
+  geom_bar(stat = "identity", fill = "skyblue") +  # Bar plot with skyblue color
+  labs(x = "Customer Name", y = "Number of Referrals", title = "Top 20 Recommenders") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip() 
+```
+
+
 
 Warehouse capacity v.s. current stock level
 
@@ -346,6 +507,64 @@ barplot(Warehouse$capacity, col = "steelblue", ylim = c(0, max(Warehouse$capacit
         main = "Warehouse Capacity and Current Stock", xlab = "Warehouse ID", ylab = "Quantity")
 barplot(Warehouse$current_stock, col = "lightpink", add = TRUE)
 legend("topright", legend = c("Capacity", "Current Stock"), fill = c("steelblue", "lightpink"))
+```
+
+Product price distribution
+
+```{r}
+# Calculate the mean price
+mean_price <- mean(Product$product_price)
+
+# Create the histogram
+ggplot(Product, aes(x = product_price)) +
+  geom_histogram(binwidth = 1, position = "identity") +
+  geom_vline(xintercept = mean_price, linetype = "dotted", color = "darkred") +  # Add the mean line
+  labs(x = "Product Price", y = "Frequency", fill = "Category ID",
+       title = "Distribution of Product Prices by Category") +
+  theme_minimal()
+
+```
+
+Number of customers in each city
+
+```{r}
+city_counts <- Customer %>%
+  group_by(city) %>%
+  summarise(num_customers = n())
+
+# Plot the counts
+ggplot(city_counts, aes(x = reorder(city, -num_customers), y = num_customers)) +
+  geom_bar(stat = "identity") +
+  labs(x = "City", y = "Number of Customers",
+       title = "Number of Customers in Each City") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Product review rating ranking from highest to lowest
+
+```{r}
+# Calculate the average rating for each product
+class(Orders$review_rating)
+Orders$review_rating <- as.numeric(Orders$review_rating)
+product_ratings <- Orders %>%
+  group_by(product_id) %>%
+  summarise(avg_rating = mean(review_rating, na.rm = TRUE))
+
+# Sort products by average rating in descending order
+product_ratings <- product_ratings[order(-product_ratings$avg_rating),]
+
+top_products <- product_ratings[product_ratings$avg_rating == 5,]
+
+
+ggplot(product_ratings, aes(x = reorder(product_id, -avg_rating), y = avg_rating, fill = factor(product_id %in% top_products$product_id))) +
+  geom_bar(stat = "identity") +
+  labs(x = "Product ID", y = "Average Rating",
+       title = "Average Rating for Each Product") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0)) +
+  scale_fill_manual(values = c("grey80", "darkred"), guide = FALSE)
+
 ```
 
 
