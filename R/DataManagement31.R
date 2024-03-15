@@ -619,6 +619,10 @@ ggsave(paste0("figures/Quantity_Ordered_Trend_",
 
 Product$product_id <- as.character(Product$product_id)
 Orders$product_id <- as.character(Orders$product_id)
+Product$category_id <- as.character(Product$category_id)
+Category$category_id <- as.character(Category$category_id)
+Category$parent_id <- as.character(Category$parent_id)
+
 
 Category <- Category %>%
   left_join(Category, by = c("parent_id" = "category_id"), suffix = c("", "_parent"))
