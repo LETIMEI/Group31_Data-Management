@@ -191,7 +191,7 @@ for (variable in all_files) {
 # primary key check for product data
 all_files <- list.files("data_upload/Product_dataset/")
 for (variable in all_files) {
-  this_filepath <- paste0("data_upload/Category_dataset/",variable)
+  this_filepath <- paste0("data_upload/Product_dataset/",variable)
   this_file_contents <- readr::read_csv(this_filepath)
   number_of_rows <- nrow(this_file_contents)
   
