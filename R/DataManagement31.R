@@ -224,6 +224,11 @@ for (variable in all_files) {
   print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
 }
 
+list_csv_files <- function(folder_path) {
+  files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
+  return(files)
+}
+
 
 folder_table_mapping <- list(
   "Customer_dataset" = "Customer",
