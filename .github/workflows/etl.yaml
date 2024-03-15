@@ -29,7 +29,7 @@ jobs:
           Rscript -e 'install.packages(c("readr","ggplot2","RSQLite", "dplyr","chron","png"))'
       - name: Execute R script
         run: |
-          Rscript DataManagement31.R
+          Rscript R/DataManagement31.R
       - name: Add files
         run: |
           git config --local --unset-all "http.https://github.com/.extraheader"
@@ -38,7 +38,7 @@ jobs:
           git add --all figures/
       - name: Commit files
         run: |
-          git commit -m "Add regression plot figure"
+          git commit -m "Add plot figure"
       - name: Pull changes
         run: |
           git pull --no-rebase origin master
