@@ -139,48 +139,11 @@ CREATE TABLE IF NOT EXISTS Orders (
     );
 ")
 
-Category <- readr::read_csv("old_data/category_data.csv")
-Category$category_id <- as.character(Category$category_id)
-Category$parent_id <- as.character(Category$parent_id)
 
-
-Customer <- readr::read_csv("old_data/customer_data.csv")
-Customer$customer_id <- as.character(Customer$customer_id)
-
-
-Supplier <- readr::read_csv("old_data/supplier_data.csv")
-Supplier$seller_id <- as.character(Supplier$seller_id)
-
-
-Warehouse <- readr::read_csv("old_data/warehouse_data.csv")
-Warehouse$warehouse_id <- as.character(Warehouse$warehouse_id)
-
-
-Product <- readr::read_csv("old_data/product_data.csv")
-Product$product_id <- as.character(Product$product_id)
-Product$seller_id <- as.character(Product$seller_id)
-Product$warehouse_id <- as.character(Product$warehouse_id)
-Product$category_id <- as.character(Product$category_id)
-
-
-Shipment <- readr::read_csv("old_data/shipment_data.csv")
-Shipment$shipment_id <- as.character(Shipment$shipment_id)
-
-
-Orders <- readr::read_csv("old_data/order_data.csv")
-
-Orders$order_date <- as.Date(Orders$order_date, format = "%Y/%m/%d")
-Orders$order_date <- as.character(Orders$order_date)
-Orders$order_id <- as.character(Orders$order_id)
-Orders$customer_id <- as.character(Orders$customer_id)
-Orders$product_id <- as.character(Orders$product_id)
-Orders$shipment_id <- as.character(Orders$shipment_id)
-
-all_files <- list.files("old_data/")
-
-# primary key check for old data
+# primary key check for category data
+all_files <- list.files("data_upload/Category_dataset/")
 for (variable in all_files) {
-  this_filepath <- paste0("old_data/",variable)
+  this_filepath <- paste0("data_upload/Category_dataset/",variable)
   this_file_contents <- readr::read_csv(this_filepath)
   number_of_rows <- nrow(this_file_contents)
   
@@ -189,14 +152,160 @@ for (variable in all_files) {
   print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
 }
 
-# write the data in to the database
-RSQLite::dbWriteTable(my_connection,"Category",Category,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Customer",Customer,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Supplier",Supplier,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Warehouse",Warehouse,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Product",Product,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Shipment",Shipment,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Orders",Orders,append=TRUE)
+# primary key check for customer data
+all_files <- list.files("data_upload/Customer_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Customer_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+
+# primary key check for warehouse data
+all_files <- list.files("data_upload/Warehouse_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Warehouse_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+
+# primary key check for supplier data
+all_files <- list.files("data_upload/Supplier_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Supplier_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+
+# primary key check for product data
+all_files <- list.files("data_upload/Product_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Category_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+
+# primary key check for shipment data
+all_files <- list.files("data_upload/Shipment_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Shipment_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+
+# primary key check for order data
+all_files <- list.files("data_upload/Orders_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Orders_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+
+
+folder_table_mapping <- list(
+  "Customer_dataset" = "Customer",
+  "Supplier_dataset" = "Supplier",
+  "Category_dataset" = "Category",
+  "Product_dataset" = "Product",
+  "Orders_dataset" = "Orders",
+  "Warehouse_dataset" = "Warehouse",
+  "Shipment_dataset" = "Shipment"
+)
+
+
+convert_column_types <- function(data, column_types) {
+  for (col_name in names(column_types)) {
+    if (col_name %in% names(data)) {
+      col_type <- column_types[[col_name]]
+      if (col_type == "character") {
+        data[[col_name]] <- as.character(data[[col_name]])
+      } else if (col_type == "date") {
+        data[[col_name]] <- as.Date(data[[col_name]], format = "%Y/%m/%d")
+        data[[col_name]] <- as.character(data[[col_name]])
+      }
+    }
+  }
+  return(data)
+}
+
+# Data type mapping for each table's columns
+column_types_mapping <- list(
+  "Category" = c("category_id" = "character", "parent_id" = "character"),
+  "Customer" = c("customer_id" = "character", "referral_by" = "character"),
+  "Supplier" = c("seller_id" = "character"),
+  "Warehouse" = c("warehouse_id" = "character"),
+  "Product" = c("product_id" = "character", "seller_id" = "character", 
+                "warehouse_id" = "character", "category_id" = "character"),
+  "Shipment" = c("shipment_id" = "character"),
+  "Orders" = c("order_id" = "character", "customer_id" = "character", 
+               "product_id" = "character", "shipment_id" = "character",
+               "order_date" = "date")
+)
+
+# Path to the main folder containing subfolders (e.g., data_upload)
+main_folder <- "data_upload"
+
+# Process each subfolder (table)
+for (folder_name in names(folder_table_mapping)) {
+  folder_path <- file.path(main_folder, folder_name)
+  if (dir.exists(folder_path)) {
+    cat("Processing folder:", folder_name, "\n")
+    # List CSV files in the subfolder
+    csv_files <- list_csv_files(folder_path)
+    
+    # Get the corresponding table name from the mapping
+    table_name <- folder_table_mapping[[folder_name]]
+    
+    # Append data from CSV files to the corresponding table
+    for (csv_file in csv_files) {
+      cat("Appending data from:", csv_file, "\n")
+      tryCatch({
+        # Read CSV file
+        file_contents <- readr::read_csv(csv_file)
+        
+        # Convert column data types
+        file_contents <- convert_column_types(file_contents, column_types_mapping[[table_name]])
+        
+        # Append data to the table in SQLite
+        RSQLite::dbWriteTable(my_connection, table_name, file_contents, append = TRUE)
+        cat("Data appended to table:", table_name, "\n")
+      }, error = function(e) {
+        cat("Error appending data:", csv_file, "\n")
+        cat("Error message:", e$message, "\n")
+      })
+    }
+  } else {
+    cat("Folder does not exist:", folder_path, "\n")
+  }
+}
+
+# List tables to confirm data appending
+tables <- RSQLite::dbListTables(my_connection)
+print(tables)
+
 
 # double check data type, column names, primary key, and not null rule again
 RSQLite::dbExecute(my_connection, "
@@ -227,60 +336,14 @@ RSQLite::dbExecute(my_connection, "
 PRAGMA table_info(Category);
 ")
 
-Category_new <- readr::read_csv("new_data/category_data_new.csv")
-Category_new$category_id <- as.character(Category_new$category_id)
-Category_new$parent_id <- as.character(Category_new$parent_id)
 
-
-Customer_new <- readr::read_csv("new_data/customer_data_new.csv")
-Customer_new$customer_id <- as.character(Customer_new$customer_id)
-
-
-Supplier_new <- readr::read_csv("new_data/supplier_data_new.csv")
-Supplier_new$seller_id <- as.character(Supplier_new$seller_id)
-
-
-Warehouse_new <- readr::read_csv("new_data/warehouse_data_new.csv")
-Warehouse_new$warehouse_id <- as.character(Warehouse_new$warehouse_id)
-
-
-Product_new <- readr::read_csv("new_data/product_data_new.csv")
-Product_new$product_id <- as.character(Product_new$product_id)
-Product_new$seller_id <- as.character(Product_new$seller_id)
-Product_new$warehouse_id <- as.character(Product_new$warehouse_id)
-Product_new$category_id <- as.character(Product_new$category_id)
-
-
-Shipment_new <- readr::read_csv("new_data/shipment_data_new.csv")
-Shipment_new$shipment_id <- as.character(Shipment_new$shipment_id)
-
-
-Orders_new <- readr::read_csv("new_data/order_data_new.csv")
-
-Orders_new$order_date <- as.Date(Orders_new$order_date, format = "%Y/%m/%d")
-Orders_new$order_date <- as.character(Orders_new$order_date)
-Orders_new$order_id <- as.character(Orders_new$order_id)
-Orders_new$customer_id <- as.character(Orders_new$customer_id)
-Orders_new$product_id <- as.character(Orders_new$product_id)
-Orders_new$shipment_id <- as.character(Orders_new$shipment_id)
-
-
-RSQLite::dbWriteTable(my_connection,"Category",Category_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Customer",Customer_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Supplier",Supplier_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Warehouse",Warehouse_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Product",Product_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Shipment",Shipment_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Orders",Orders_new,append=TRUE)
-
-
-Warehouse <- rbind(Warehouse, Warehouse_new)
-Product <- rbind(Product, Product_new)
-Customer <- rbind(Customer, Customer_new)
-Category <- rbind(Category, Category_new)
-Supplier <- rbind(Supplier, Supplier_new)
-Orders <- rbind(Orders, Orders_new)
-Shipment <- rbind(Shipment, Shipment_new)
+Customer <- dbGetQuery(my_connection, "SELECT * FROM Customer")
+Supplier <- dbGetQuery(my_connection, "SELECT * FROM Supplier")
+Warehouse <- dbGetQuery(my_connection, "SELECT * FROM Warehouse")
+Product <- dbGetQuery(my_connection, "SELECT * FROM Product")
+Orders <- dbGetQuery(my_connection, "SELECT * FROM Orders")
+Shipment <- dbGetQuery(my_connection, "SELECT * FROM Shipment")
+Category <- dbGetQuery(my_connection, "SELECT * FROM Category")
 
 
 RSQLite::dbExecute(my_connection, "
@@ -550,6 +613,17 @@ ggsave(paste0("figures/Quantity_Ordered_Trend_",
               this_filename_date,"_",
               this_filename_time,".png"))
 
+Product$product_id <- as.character(Product$product_id)
+Orders$product_id <- as.character(Orders$product_id)
+
+Category <- Category %>%
+  left_join(Category, by = c("parent_id" = "category_id"), suffix = c("", "_parent"))
+
+# Create the parent_name column based on the join result
+Category <- Category %>%
+  mutate(parent_name = ifelse(is.na(parent_id), NA, category_name_parent)) %>%
+  select(category_id, category_name, parent_id, parent_name)
+
 sales_data <- Orders %>%
   inner_join(Product, by = "product_id") %>%
   inner_join(Category, by = "category_id") %>%
@@ -560,7 +634,6 @@ ggplot(sales_data, aes(x = order_date, y = units_sold, color = parent_name)) +
   geom_line() +
   labs(x = "Order Date", y = "Units Sold", title = "Units Sold by Parent Category Across Time") +
   scale_color_discrete(name = "Parent Category")
-
 
 this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 
