@@ -1,4 +1,3 @@
-
 library(png)
 library(grid)
 
@@ -580,5 +579,3 @@ this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Quantity_Ordered_Trend_by_ParentCategory_",
               this_filename_date,"_",
               this_filename_time,".png"))
-
-
