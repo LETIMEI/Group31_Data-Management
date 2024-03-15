@@ -5,6 +5,8 @@ on:
     - cron: '0 */12 * * *' # Run every 12 hours
   push:
     branches: [ master ]
+    paths:
+     - 'data_upload/**'
     
 jobs:
   build:
