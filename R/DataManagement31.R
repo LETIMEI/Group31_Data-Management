@@ -1,18 +1,6 @@
 library(png)
 library(grid)
 
-ER_1 <- readPNG("E-R Diagram First Version.png")
-grid.raster(ER_1)
-
-ER <- readPNG("E-R Diagram.png")
-grid.raster(ER)
-
-Cardinality <- readPNG("Cardinality.png")
-grid.raster(Cardinality)
-
-LogicalSchema <- readPNG("logical schema.png")
-grid.raster(LogicalSchema)
-
 
 rm(list=ls())
 install.packages("readr")
