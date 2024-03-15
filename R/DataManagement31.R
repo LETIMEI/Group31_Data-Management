@@ -541,7 +541,6 @@ ggsave(paste0("figures/Product_Price_Distribution_",
               this_filename_time,".png"))
 
 
-
 city_counts <- Customer %>%
   group_by(city) %>%
   summarise(num_customers = n())
