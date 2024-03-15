@@ -2,7 +2,7 @@ name: Update Repository with result
 
 on:
   schedule:
-    - cron: '0 */10 * * *' # Run every 12 hours
+    - cron: '0 */1 * * *' # Run every 12 hours
   push:
     branches: [ master ]
     paths:
