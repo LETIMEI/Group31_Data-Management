@@ -2,7 +2,7 @@
 library(png)
 library(grid)
 
-ER_1 <- readPNG("First E-R Diagram.png")
+ER_1 <- readPNG("E-R Diagram First Version.png")
 grid.raster(ER_1)
 
 ER <- readPNG("E-R Diagram.png")
@@ -13,7 +13,6 @@ grid.raster(Cardinality)
 
 LogicalSchema <- readPNG("logical schema.png")
 grid.raster(LogicalSchema)
-
 
 
 rm(list=ls())
@@ -190,6 +189,20 @@ Orders$customer_id <- as.character(Orders$customer_id)
 Orders$product_id <- as.character(Orders$product_id)
 Orders$shipment_id <- as.character(Orders$shipment_id)
 
+all_files <- list.files("old_data/")
+
+# primary key check for old data
+for (variable in all_files) {
+  this_filepath <- paste0("old_data/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+
+# write the data in to the database
 RSQLite::dbWriteTable(my_connection,"Category",Category,append=TRUE)
 RSQLite::dbWriteTable(my_connection,"Customer",Customer,append=TRUE)
 RSQLite::dbWriteTable(my_connection,"Supplier",Supplier,append=TRUE)
@@ -198,8 +211,33 @@ RSQLite::dbWriteTable(my_connection,"Product",Product,append=TRUE)
 RSQLite::dbWriteTable(my_connection,"Shipment",Shipment,append=TRUE)
 RSQLite::dbWriteTable(my_connection,"Orders",Orders,append=TRUE)
 
+# double check data type, column names, primary key, and not null rule again
 RSQLite::dbExecute(my_connection, "
 PRAGMA table_info(Orders);
+")
+
+RSQLite::dbExecute(my_connection, "
+PRAGMA table_info(Customer);
+")
+
+RSQLite::dbExecute(my_connection, "
+PRAGMA table_info(Warehouse);
+")
+
+RSQLite::dbExecute(my_connection, "
+PRAGMA table_info(Supplier);
+")
+
+RSQLite::dbExecute(my_connection, "
+PRAGMA table_info(Shipment);
+")
+
+RSQLite::dbExecute(my_connection, "
+PRAGMA table_info(Product);
+")
+
+RSQLite::dbExecute(my_connection, "
+PRAGMA table_info(Category);
 ")
 
 Category_new <- readr::read_csv("new_data/category_data_new.csv")
@@ -507,8 +545,40 @@ ggsave(paste0("figures/Product_Avg_Rating_",
               this_filename_time,".png"))
 
 
+Orders$order_date <- as.Date(Orders$order_date)
+Orders$quantity_of_product_ordered <- as.numeric(Orders$quantity_of_product_ordered)
+
+agg_data <- Orders %>%
+  group_by(order_date) %>%
+  summarise(total_quantity = sum(quantity_of_product_ordered))
+
+# Plot using ggplot
+ggplot(agg_data, aes(x = order_date, y = total_quantity)) +
+  geom_line(stat = "identity", color = "steelblue") +
+  labs(x = "Order Date", y = "Total Quantity Ordered", title = "Number of Products Ordered per Day")
+
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+
+ggsave(paste0("figures/Quantity_Ordered_Trend_",
+              this_filename_date,"_",
+              this_filename_time,".png"))
+
+sales_data <- Orders %>%
+  inner_join(Product, by = "product_id") %>%
+  inner_join(Category, by = "category_id") %>%
+  group_by(order_date, parent_id, parent_name) %>%
+  summarise(units_sold = sum(quantity_of_product_ordered))
+
+ggplot(sales_data, aes(x = order_date, y = units_sold, color = parent_name)) +
+  geom_line() +
+  labs(x = "Order Date", y = "Units Sold", title = "Units Sold by Parent Category Across Time") +
+  scale_color_discrete(name = "Parent Category")
 
 
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 
+ggsave(paste0("figures/Quantity_Ordered_Trend_by_ParentCategory_",
+              this_filename_date,"_",
+              this_filename_time,".png"))
 
 
