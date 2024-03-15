@@ -489,7 +489,7 @@ LIMIT 20;
 ")
 
 ggplot(top_recommender, aes(x = customer_name, y = referred_number)) +
-  geom_bar(stat = "identity", fill = "skyblue") +  # Bar plot with skyblue color
+  geom_bar(stat = "identity", fill = "skyblue") + 
   labs(x = "Customer Name", y = "Number of Referrals", title = "Top 20 Recommenders") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -523,18 +523,14 @@ this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Warehouse_Capacity_", this_filename_date, "_", this_filename_time, ".png"))
 
 
-
 # Calculate the mean price
 mean_price <- mean(Product$product_price)
 
-# Create the histogram
 ggplot(Product, aes(x = product_price)) +
-  geom_histogram(binwidth = 1, position = "identity") +
-  geom_vline(xintercept = mean_price, linetype = "dotted", color = "darkred") +  # Add the mean line
-  labs(x = "Product Price", y = "Frequency", fill = "Category ID",
-       title = "Distribution of Product Prices by Category") +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = mean_price, linetype = "dotted", color = "darkred") + 
+  labs(x = "Product Price", y = "Frequency", title = "Distribution of Product Prices") +
   theme_minimal()
-
 
 this_filename_date <- as.character(Sys.Date())
 
@@ -575,7 +571,8 @@ product_ratings <- Orders %>%
   group_by(product_id) %>%
   summarise(avg_rating = mean(review_rating, na.rm = TRUE))
 
-# Sort products by average rating in descending order
+product_ratings <- product_ratings[product_ratings$avg_rating >= 4,]
+
 product_ratings <- product_ratings[order(-product_ratings$avg_rating),]
 
 top_products <- product_ratings[product_ratings$avg_rating == 5,]
@@ -586,7 +583,7 @@ ggplot(product_ratings, aes(x = reorder(product_id, -avg_rating), y = avg_rating
   labs(x = "Product ID", y = "Average Rating",
        title = "Average Rating for Each Product") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 0)) +
+  theme(axis.text.x = element_text(angle = 00, hjust = 0)) +
   scale_fill_manual(values = c("grey80", "darkred"), guide = FALSE)
 
 this_filename_date <- as.character(Sys.Date())
