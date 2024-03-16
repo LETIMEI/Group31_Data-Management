@@ -360,29 +360,64 @@ SELECT * FROM Category
 LIMIT 10
 ")
 
+
 RSQLite::dbExecute(my_connection, "
 SELECT 
-    o.order_id,
-    o.customer_id,
-    SUM(o.quantity_of_product_ordered * (p.product_price - o.voucher_value)) AS total_value,
-    s.shipping_charge
+    c.customer_id,
+    c.first_name, 
+    c.last_name, 
+    COUNT(*) AS number_of_orders
 FROM 
     Orders o
 JOIN 
-    Product p ON o.product_id = p.product_id
+    Customer c ON o.customer_id = c.customer_id
+GROUP BY 
+    c.customer_id
+ORDER BY 
+    number_of_orders DESC
+LIMIT 10;
+")
+
+(top_city <- RSQLite::dbGetQuery(my_connection,"
+SELECT 
+    c.city, 
+    COUNT(*) AS number_of_orders,
+    AVG(o.quantity_of_product_ordered * (p.product_price - o.voucher_value) + s.shipping_charge) AS avg_order_value
+FROM 
+    Orders o
 JOIN 
     Shipment s ON o.shipment_id = s.shipment_id
+JOIN 
+    Customer c ON o.customer_id = c.customer_id
+JOIN 
+    Product p ON o.product_id = p.product_id
 GROUP BY 
-    o.order_id, o.customer_id, s.shipping_charge
-ORDER BY 
-    total_value DESC;
-    ")
+    c.city;
+"))
+
+# Reorder the levels of the city factor based on avg_order_value
+top_city$city <- factor(top_city$city, levels = top_city$city[order(-top_city$avg_order_value)])
+
+# Plotting the data with reordered levels
+ggplot(top_city, aes(x = city, y = avg_order_value)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "City", y = "Average Order Value", title = "Average Order Value by City") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Save the plot as an image
+this_filename_date <- as.character(Sys.Date())
+this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
+ggsave(paste0("figures/City_Sales_", this_filename_date, "_", this_filename_time, ".png"))
+
+
 
 RSQLite::dbExecute(my_connection, "
 SELECT 
     p.product_id,
     p.product_name,
-    SUM(o.quantity_of_product_ordered) AS total_sold
+    COUNT(*) AS number_of_order,
+    SUM(o.quantity_of_product_ordered) AS quantity_sold
 FROM 
     Orders o
 JOIN 
@@ -390,26 +425,11 @@ JOIN
 GROUP BY 
     p.product_id, p.product_name
 ORDER BY 
-    total_sold DESC;")
-
-RSQLite::dbExecute(my_connection, "
-SELECT 
-    c.category_id,
-    c.category_name,
-    COUNT(o.quantity_of_product_ordered) AS total_sold_unit
-FROM 
-    Orders o
-JOIN 
-    Product p ON o.product_id = p.product_id
-JOIN 
-    Category c ON p.category_id = c.category_id
-GROUP BY 
-    c.category_id, c.category_name
-ORDER BY 
-    total_sold_unit DESC;
+    quantity_sold DESC;
     ")
 
-top_categ <- RSQLite::dbGetQuery(my_connection,"SELECT 
+# calculate the number of units sold in each (sub)category and save the value as top_categ
+(top_categ <- RSQLite::dbGetQuery(my_connection,"SELECT 
     pc.category_id AS parent_category_id,
     pc.category_name AS parent_category_name,
     c.category_id,
@@ -427,9 +447,20 @@ GROUP BY
     pc.category_id, pc.category_name, c.category_id, c.category_name
 ORDER BY 
     pc.category_id, total_sold_unit DESC;
-")
+"))
 
-ggplot(top_categ, aes(x = category_name, y = total_sold_unit, fill = parent_category_name)) +
+# visualize the total sold unit by (sub)category and color them with their corresponding parent categories
+top_categ_summary <- top_categ %>%
+  group_by(category_name, parent_category_name) %>%
+  summarise(total_sold_unit = sum(total_sold_unit)) %>%
+  arrange(desc(total_sold_unit))  # Arrange in descending order based on total_sold_unit
+
+# Reorder category_name based on total_sold_unit
+top_categ_summary$category_name <- factor(top_categ_summary$category_name, 
+                                          levels = top_categ_summary$category_name[order(-top_categ_summary$total_sold_unit)])
+
+# Plotting the reordered data
+ggplot(top_categ_summary, aes(x = category_name, y = total_sold_unit, fill = parent_category_name)) +
   geom_bar(stat = "identity") +
   labs(x = "Category", y = "Total Sold Units", title = "Total Sold Units by Category") +
   theme_minimal() +
@@ -441,8 +472,11 @@ this_filename_date <- as.character(Sys.Date())
 this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Category_Sales_", this_filename_date, "_", this_filename_time, ".png"))
 
-top_parent_categ <- RSQLite::dbGetQuery(my_connection,"
-                                        SELECT 
+
+
+# calculate the sold units for each parent category and save the value as top_parent_categ
+(top_parent_categ <- RSQLite::dbGetQuery(my_connection,"
+SELECT 
     pc.category_id AS parent_category_id,
     pc.category_name AS parent_category_name,
     SUM(o.quantity_of_product_ordered) AS total_sold_unit
@@ -458,8 +492,9 @@ GROUP BY
     pc.category_id, pc.category_name
 ORDER BY 
     total_sold_unit DESC;
-")
+"))
 
+# visualize the total sold units by parent category with ggplot bar chart
 ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit #, fill = parent_category_name
 )) +
   geom_bar(stat = "identity") +
@@ -473,6 +508,9 @@ this_filename_date <- as.character(Sys.Date())
 this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Parent_Category_Sales_", this_filename_date, "_", this_filename_time, ".png"))
 
+
+
+# calculate and list our top recommenders
 top_recommender <- RSQLite::dbGetQuery(my_connection,"SELECT 
     c1.customer_id AS customer_id,
     CONCAT(c1.first_name, ' ', c1.last_name) AS customer_name,
@@ -501,17 +539,11 @@ this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Top_Recommenders_", this_filename_date, "_", this_filename_time, ".png"))
 
 
-warehouse_data <- data.frame(
-  Warehouse_ID = 1:nrow(Warehouse),  # Assuming Warehouse has an ID column
-  Capacity = Warehouse$capacity,
-  Current_Stock = Warehouse$current_stock
-)
-
 # filter only those with current stock more than half of the capacity
 filtered_warehouse <- Warehouse %>%
   filter(current_stock > capacity / 2)
 
-# Plotting with filtered data
+# Plotting with filtered data to see the stock level for these warehouses
 ggplot(filtered_warehouse, aes(x = warehouse_id)) +
   geom_bar(aes(y = capacity), stat = "identity", fill = "steelblue", alpha = 0.8) +
   geom_bar(aes(y = current_stock), stat = "identity", fill = "lightpink", alpha = 0.8) +
@@ -520,8 +552,9 @@ ggplot(filtered_warehouse, aes(x = warehouse_id)) +
   theme(legend.position = "top") +
   scale_fill_manual(values = c("steelblue", "lightpink"), 
                     labels = c("Capacity", "Current Stock"),
-                    name = "Legend") +  # Modify legend title
+                    name = "Legend") +  
   guides(fill = guide_legend(title = "Legend")) 
+
 
 # Save the plot as an image
 this_filename_date <- as.character(Sys.Date())
@@ -529,61 +562,27 @@ this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 ggsave(paste0("figures/Warehouse_Capacity_", this_filename_date, "_", this_filename_time, ".png"))
 
 
-# Calculate the mean price
-mean_price <- mean(Product$product_price)
-
-ggplot(Product, aes(x = product_price)) +
-  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
-  geom_vline(xintercept = mean_price, linetype = "dotted", color = "darkred") + 
-  labs(x = "Product Price", y = "Frequency", title = "Distribution of Product Prices") +
-  theme_minimal()
-
-this_filename_date <- as.character(Sys.Date())
-
-# format the Sys.time() to show only hours and minutes 
-this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
-
-ggsave(paste0("figures/Product_Price_Distribution_",
-              this_filename_date,"_",
-              this_filename_time,".png"))
-
-
-city_counts <- Customer %>%
-  group_by(city) %>%
-  summarise(num_customers = n())
-
-# Plot the counts
-ggplot(city_counts, aes(x = reorder(city, -num_customers), y = num_customers)) +
-  geom_bar(stat = "identity") +
-  labs(x = "City", y = "Number of Customers",
-       title = "Number of Customers in Each City") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-this_filename_date <- as.character(Sys.Date())
-
-# format the Sys.time() to show only hours and minutes 
-this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
-
-ggsave(paste0("figures/Customer_Distribution_",
-              this_filename_date,"_",
-              this_filename_time,".png"))
-
-
-# Calculate the average rating for each product
+# check the data type for 'review_rating' before analyzing
 class(Orders$review_rating)
-Orders$review_rating <- as.numeric(Orders$review_rating)
-product_ratings <- Orders %>%
-  group_by(product_id) %>%
-  summarise(avg_rating = mean(review_rating, na.rm = TRUE))
 
+# make sure the data type is numeric so that we can calculate the average value
+Orders$review_rating <- as.numeric(Orders$review_rating)
+
+# calculate average rating for each product
+(product_ratings <- Orders %>%
+    group_by(product_id) %>%
+    summarise(avg_rating = mean(review_rating, na.rm = TRUE)) %>%
+    arrange(desc(avg_rating)))
+
+# specify that we only want to show those with an average rating higher than 4
 product_ratings <- product_ratings[product_ratings$avg_rating >= 4,]
 
 product_ratings <- product_ratings[order(-product_ratings$avg_rating),]
 
+# define those with average rating=5 as top products
 top_products <- product_ratings[product_ratings$avg_rating == 5,]
 
-
+# visualize the rating by ggplot
 ggplot(product_ratings, aes(x = reorder(product_id, -avg_rating), y = avg_rating, fill = factor(product_id %in% top_products$product_id))) +
   geom_bar(stat = "identity") +
   labs(x = "Product ID", y = "Average Rating",
@@ -614,38 +613,47 @@ ggplot(agg_data, aes(x = order_date, y = total_quantity)) +
   geom_line(stat = "identity", color = "steelblue") +
   labs(x = "Order Date", y = "Total Quantity Ordered", title = "Number of Products Ordered per Day")
 
+this_filename_date <- as.character(Sys.Date())
 this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 
 ggsave(paste0("figures/Quantity_Ordered_Trend_",
               this_filename_date,"_",
               this_filename_time,".png"))
 
+# Ensure that data type are the same before joining tables together
 Product$product_id <- as.character(Product$product_id)
 Orders$product_id <- as.character(Orders$product_id)
 Product$category_id <- as.character(Product$category_id)
 Category$category_id <- as.character(Category$category_id)
 Category$parent_id <- as.character(Category$parent_id)
 
-
+# use self join for Category table
 Category <- Category %>%
   left_join(Category, by = c("parent_id" = "category_id"), suffix = c("", "_parent"))
 
-# Create the parent_name column based on the join result
+# create the parent_name column based on the join result
 Category <- Category %>%
   mutate(parent_name = ifelse(is.na(parent_id), NA, category_name_parent)) %>%
   select(category_id, category_name, parent_id, parent_name)
 
+# calculate unit sold by each parent category across time
 sales_data <- Orders %>%
   inner_join(Product, by = "product_id") %>%
   inner_join(Category, by = "category_id") %>%
   group_by(order_date, parent_id, parent_name) %>%
   summarise(units_sold = sum(quantity_of_product_ordered))
 
-ggplot(sales_data, aes(x = order_date, y = units_sold, color = parent_name)) +
+# filter some parent categories we want to focus
+filtered_sales_data <- sales_data %>%
+  filter(parent_name %in% c("Denim", "Dresses", "Tops"))
+
+# Plotting the filtered data
+ggplot(filtered_sales_data, aes(x = order_date, y = units_sold, color = parent_name)) +
   geom_line() +
   labs(x = "Order Date", y = "Units Sold", title = "Units Sold by Parent Category Across Time") +
   scale_color_discrete(name = "Parent Category")
 
+this_filename_date <- as.character(Sys.Date())
 this_filename_time <- as.character(format(Sys.time(), format = "%H_%M"))
 
 ggsave(paste0("figures/Quantity_Ordered_Trend_by_ParentCategory_",
