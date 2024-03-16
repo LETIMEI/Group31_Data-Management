@@ -507,15 +507,21 @@ warehouse_data <- data.frame(
   Current_Stock = Warehouse$current_stock
 )
 
-# Create the ggplot object
-ggplot(warehouse_data, aes(x = Warehouse_ID)) +
-  geom_bar(aes(y = Capacity), stat = "identity", fill = "steelblue", alpha = 0.8) +
-  geom_bar(aes(y = Current_Stock), stat = "identity", fill = "lightpink", alpha = 0.8) +
+# filter only those with current stock more than half of the capacity
+filtered_warehouse <- Warehouse %>%
+  filter(current_stock > capacity / 2)
+
+# Plotting with filtered data
+ggplot(filtered_warehouse, aes(x = warehouse_id)) +
+  geom_bar(aes(y = capacity), stat = "identity", fill = "steelblue", alpha = 0.8) +
+  geom_bar(aes(y = current_stock), stat = "identity", fill = "lightpink", alpha = 0.8) +
   labs(title = "Warehouse Capacity and Current Stock", x = "Warehouse ID", y = "Quantity") +
   theme_minimal() +
   theme(legend.position = "top") +
-  scale_fill_manual(values = c("steelblue", "lightpink"), labels = c("Capacity", "Current Stock")) +
-  guides(fill = guide_legend(title = "Legend"))
+  scale_fill_manual(values = c("steelblue", "lightpink"), 
+                    labels = c("Capacity", "Current Stock"),
+                    name = "Legend") +  # Modify legend title
+  guides(fill = guide_legend(title = "Legend")) 
 
 # Save the plot as an image
 this_filename_date <- as.character(Sys.Date())
