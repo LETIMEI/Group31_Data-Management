@@ -45,9 +45,7 @@ jobs:
           git commit -m "Add plot figure"
       - name: Pull changes
         run: |
-          git stash save "temp changes"
           git pull --no-rebase origin master
-          git stash pop
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
