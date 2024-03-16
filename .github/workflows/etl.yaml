@@ -1,4 +1,4 @@
-name: Update Repository with Result
+name: Update Repository with Results
 
 on:
   schedule:
