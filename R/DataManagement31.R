@@ -24,8 +24,7 @@ RSQLite::dbExecute(my_connection,"
 CREATE TABLE IF NOT EXISTS Category(
   category_id VARCHAR(20) PRIMARY KEY NOT NULL,
   category_name VARCHAR (20) NOT NULL,
-  parent_id INT,
-  parent_name VARCHAR (20)
+  parent_id VARCHAR(20)
   );
   ")
 
@@ -44,7 +43,7 @@ CREATE TABLE IF NOT EXISTS Customer(
   city VARCHAR (100) NOT NULL,
   password_c VARCHAR (10) NOT NULL, 
   phone_number INT (11) NOT NULL,
-  referral_by VARCHAR(20)
+  referral_by VARCHAR(50)
   );
   ")
 
@@ -55,15 +54,15 @@ DROP TABLE IF EXISTS Supplier;
 RSQLite::dbExecute(my_connection, "
 CREATE TABLE IF NOT EXISTS Supplier (
     seller_id VARCHAR(50) PRIMARY KEY NOT NULL,
-    seller_store_name VARCHAR(100),
-    supplier_email VARCHAR(255),
-    password_s VARCHAR(255),
-    receiving_bank VARCHAR(50),
+    seller_store_name VARCHAR(100) NOT NULL,
+    supplier_email VARCHAR(255) NOT NULL,
+    password_s VARCHAR(255) NOT NULL,
+    receiving_bank VARCHAR(50) NOT NULL,
     seller_rating INT,
-    seller_phone_number VARCHAR(20),
-    seller_address_street VARCHAR(255),
-    s_post_code VARCHAR(50),
-    s_city VARCHAR(50)
+    seller_phone_number VARCHAR(20) NOT NULL,
+    seller_address_street VARCHAR(255) NOT NULL,
+    s_post_code VARCHAR(50) NOT NULL,
+    s_city VARCHAR(50) NOT NULL
     );
     ")
 
@@ -74,11 +73,11 @@ DROP TABLE IF EXISTS Warehouse;
 RSQLite::dbExecute(my_connection, "
 CREATE TABLE IF NOT EXISTS Warehouse (
     warehouse_id VARCHAR(50) PRIMARY KEY NOT NULL,
-    capacity INT,
-    current_stock INT,
-    w_city VARCHAR(50),
-    w_post_code VARCHAR(50),
-    w_address_street VARCHAR(255)
+    capacity INT NOT NULL,
+    current_stock INT NOT NULL,
+    w_city VARCHAR(50) NOT NULL,
+    w_post_code VARCHAR(50) NOT NULL,
+    w_address_street VARCHAR(255) NOT NULL
     );
     ")
 
@@ -90,13 +89,13 @@ DROP TABLE IF EXISTS Product;
 RSQLite::dbExecute(my_connection, "
 CREATE TABLE IF NOT EXISTS Product (
   product_id INT PRIMARY KEY NOT NULL,
-  product_name VARCHAR(50),
-  category_id VARCHAR(20),
+  product_name VARCHAR(50) NOT NULL,
+  category_id VARCHAR(20) NOT NULL,
   warehouse_id VARCHAR(50),
-  seller_id VARCHAR(50),
-  product_weight FLOAT,
-  product_price FLOAT,
-  product_size VARCHAR(20),
+  seller_id VARCHAR(50) NOT NULL,
+  product_weight FLOAT NOT NULL,
+  product_price FLOAT NOT NULL,
+  product_size VARCHAR(20) NOT NULL,
   FOREIGN KEY (seller_id) REFERENCES Supplier(seller_id)
   FOREIGN KEY (category_id) REFERENCES Category(category_id),
   FOREIGN KEY (warehouse_id) REFERENCES Warehouse(warehouse_id)
@@ -110,8 +109,8 @@ DROP TABLE IF EXISTS Shipment;
 RSQLite::dbExecute(my_connection, "
 CREATE TABLE IF NOT EXISTS Shipment (
     shipment_id VARCHAR(50) PRIMARY KEY NOT NULL,
-    shipping_method VARCHAR(50),
-    shipping_charge FLOAT
+    shipping_method VARCHAR(50) NOT NULL,
+    shipping_charge FLOAT NOT NULL
     );
 ")
 
@@ -123,12 +122,12 @@ RSQLite::dbExecute(my_connection, "
 CREATE TABLE IF NOT EXISTS Orders (
     order_id VARCHAR(50) NOT NULL,
     order_date DATE NOT NULL,
-    order_status VARCHAR(50),
-    quantity_of_product_ordered INT,
-    payment_method VARCHAR(50),
-    voucher_value INT,
+    order_status VARCHAR(50) NOT NULL,
+    quantity_of_product_ordered INT NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    voucher_value INT NOT NULL,
     review_rating INT,
-    shipment_id VARCHAR(50),
+    shipment_id VARCHAR(50) NOT NULL,
     product_id VARCHAR(50) NOT NULL,
     customer_id VARCHAR(50) NOT NULL,
     PRIMARY KEY (order_id, customer_id, product_id),
