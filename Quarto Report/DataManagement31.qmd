@@ -1,14 +1,21 @@
 ---
-title: "Data Management Group Assignment"
-output: html_document
-date: "2024-03-07"
-editor_options: 
-chunk_output_type: console
+title: "Data Management Group_31 Report"
+format: 
+  pdf:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    link-citations: true
+    page-layout: potrait
+    papersize: a4
+    margin-left: 20mm
+    margin-right: 10mm
+editor: visual
+word_wrap: true
+engine: pdflatex
 ---
 
-# Introduction
-
-The e-commerce sector relies heavily on data-driven insights to understand client behavior, enhance operations, and drive growth. This study describes our comprehensive strategy to emulate a real-world e-commerce data environment, which includes database design, data generation, management, automation, and data analysis. Our goal is to gain a comprehensive understanding of the entire data management process and exhibit skill in using programs such as SQLite, python, GitHub Actions, R, and Quarto.
+\newpage
 
 # Part1: Database Design and Implementation
 
@@ -18,13 +25,13 @@ The first step in building our e-commerce database was to design the E-R diagram
 
 ##### Figure 1: Our Original E-R diagram
 
-![](images/E-R%20Diagram%20First%20Version.png)
+![](images/E-R%20Diagram%20First%20Version.png){width="571"}
 
 ##### Figure 2: Our Final E-R diagram
 
-![](images/E-R%20Diagram.png)
+![](images/E-R%20Diagram.png){width="571"}
 
-Our final diatram contains 6 main entities and their attributes. Seven 1 to N relationships, one M to N relationship between Product and Customer and 2 self referencing relationships(referred and belongs). The key attributes (unique) of each entity are underlined.
+Our final diagram contains 6 main entities and their attributes. Seven 1 to N relationships, one M to N relationship between Product and Customer and 2 self referencing relationships(referred and belongs). The key attributes (unique) of each entity are underlined.
 
 ### Assumption Made for Cardinality
 
@@ -57,7 +64,21 @@ Below are shown the relationship sets used in the E-R diagram:
 
 ### Logical Schema
 
-Following the conceptual modelling we translated the E-R diagram to the logical schema converting each entity and each many to many relationship to a separate table including the primary and foreign keys. Category, Customer, Supplier, Warehouse, Product and Shipment were all entities and were converted to tables. Order was a many to many relationship between Product and Customer hence became a table as well. All tables have their own primary keys(single underline), with Customer having 2 primary keys and, Order having 3. For 1 to N relationships the key of the strong entity(1) was included as a foreign key in the table of the weak entity(N). For example, in the relationship of supplier and product, the supplier_id is included as a foreign key in the products table. Order, coming from an m to n relationship has a composite key of order_id, customer_id and product_id. Foreign keys are shown in double underline.
+Following the conceptual modelling we translated the E-R diagram to the logical schema converting each entity and each many to many relationship to a separate table including the primary and foreign keys. Category, Customer, Supplier, Warehouse, Product and Shipment were all entities and were converted to tables. Order was a many to many relationship between Product and Customer hence became a table as well.
+
+Product is an entity with product_id as primary key. Product also has attribute of product_name, product_weight, product_price, product_size, supplier_id(foreign key), category_id(foreign key), and warehouse_Id(foreign key) since Product has relationship with Supplier, Category, and Warehouse(1:N). 
+
+Shipment is an entity with shipment_id as primary key. Shipment also has attribute of shipping_method and shipping_charge. 
+
+Category is an entity with category_id as primary key. Category also has attribute of category_name and parent_id. 
+
+Customer is an entity with customer_id as primary key. Customer also has attribute of email, city, post_code, street_name, first_name, last_name, password_c, phone_number, and referral_by. 
+
+Supplier is an entity with seller_id as primary key. Supplier also has attribute of seller_store_name, supplier_email, password_s, receiving_bank, seller_rating, seller_phone_number, seller_address_street, s_post_code, and s_city. 
+
+Warehouse is an entity with warehouse_id as primary key. Warehouse also has attribute of w_city, w_post_code, w_address_street, capacity, and current_stock. 
+
+Order table is the table from the M to N relationship of Customer and Product entity. In result, the Order table will have composite primary key consists of order_id, customer_id, and product_id. In addition, Order table also has attribute of quantity_of_product_ordered, order_status, payment_method, order_date, voucher_value, and review_rating, as well product_id, customer_id, shipment_id as foreign key since Order is ternary relationship between Product, Customer, and Shipment. 
 
 ![](images/logical%20schema.png)
 
@@ -92,7 +113,8 @@ Category table
 We started by creating a Category table to store information about different product categories.This table serves as the fundamental component of our database schema, providing a structured framework for organizing and categorizing our product inventory. The Category table includes fields to store unique identifiers for each category, along with their respective names and any hierarchical relationships, such as parent categories.
 
 ```{sql connection=my_connection}
---Check if the table exists and drops it if it does, ensure a clean slate for creating the table
+--Check if the table exists and drops it if it does
+--Ensure a clean slate for creating the table
 DROP TABLE IF EXISTS Category;
 ```
 
@@ -282,19 +304,23 @@ def customer_data(num_customers, postcode_city_data, filename):
     customer_id_set = set()
     with open(filename, 'w', newline='') as file:
         writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
-        writer.writerow(['customer_id', 'email', 'first_name', 'last_name', 'street_name', 'post_code', 'city', 'password_c', 'phone_number', 'referral_by'])
+        writer.writerow(['customer_id', 'email', 'first_name', 'last_name', 
+        'street_name', 'post_code', 'city', 'password_c', 'phone_number', 
+        'referral_by'])
         
         # Generate list of customer IDs
         while len(customer_id_set) < num_customers:
             customer_id_set.add(fake.random_int(min=10001, max=50000))
-        
-        customer_ids = list(customer_id_set)  # Convert set to list for easy popping
+            
+        # Convert set to list for easy popping
+        customer_ids = list(customer_id_set)  
         random.shuffle(customer_ids)  # Shuffle the list of customer IDs
         
         for _ in range(num_customers):
             post_code, city = random.choice(list(postcode_city_data.items()))
             street_name = fake.street_address()
-            customer_id = customer_ids.pop()  # Get a customer ID and remove it from the list
+            # Get a customer ID and remove it from the list
+            customer_id = customer_ids.pop()  
             first_name = fake.first_name()
             last_name = fake.last_name()
             # Create email using first name and last name
@@ -458,7 +484,8 @@ We then read the .csv files from the data_upload folder and write them into the 
 ```{r dataloading,message=FALSE,warning=FALSE}
 # set a function to list all csv files in the assigned path
 list_csv_files <- function(folder_path) {
-  files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
+  files <- list.files(path = folder_path, pattern = "\\.csv$", 
+                      full.names = TRUE)
   return(files)
 }
 
@@ -473,7 +500,7 @@ folder_table_mapping <- list(
   "Shipment_dataset" = "Shipment"
 )
 
-# make sure some columns are in the data type we want before writing data into the database
+# make sure some columns are in the data type we want before writing data 
 convert_column_types <- function(data, column_types) {
   for (col_name in names(column_types)) {
     if (col_name %in% names(data)) {
@@ -525,10 +552,12 @@ for (folder_name in names(folder_table_mapping)) {
         file_contents <- readr::read_csv(csv_file)
         
         # Convert column data types
-        file_contents <- convert_column_types(file_contents, column_types_mapping[[table_name]])
+        file_contents <- convert_column_types(file_contents, 
+                                            column_types_mapping[[table_name]])
         
         # Append data to the table in SQLite
-        RSQLite::dbWriteTable(my_connection, table_name, file_contents, append = TRUE)
+        RSQLite::dbWriteTable(my_connection, table_name, file_contents,
+                              append = TRUE)
         cat("Data appended to table:", table_name, "\n")
       }, error = function(e) {
         cat("Error appending data:", csv_file, "\n")
@@ -608,7 +637,7 @@ Category <- dbGetQuery(my_connection, "SELECT * FROM Category")
 
 In this section, we focus on setting up a data pipeline for efficient management and version control of our project using GitHub. The link to the team's GitHub work space is:
 
-[[https://github.com/LETIMEI/Group31_Data-Managemen]{.underline}](https://github.com/LETIMEI/Group31_Data-Management%3E.){.uri}[[t]{.underline}](https://github.com/LETIMEI/Group31_Data-Management)
+<https://github.com/LETIMEI/Group31_Data-Management>
 
 ## Task 3.1: GitHub repository and Workflow Setup
 
@@ -633,7 +662,7 @@ on:
     paths:
      - '.github/workflows/**' # Run whenever the workflow code update
      - 'R/**'  # Run whenever the R script update
-     - 'data_upload/**'  # Run whenever new data uploaded to the data_upload folder
+     - 'data_upload/**'#Run whenever new data uploaded to the data_upload folder
     
 jobs:
   build:
@@ -655,7 +684,8 @@ jobs:
       - name: Install packages
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          Rscript -e 'install.packages(c("readr","ggplot2","RSQLite", "dplyr","chron","png"))'
+          Rscript -e 'install.packages(c("readr","ggplot2","RSQLite", 
+          "dplyr","chron","png"))'
       - name: Execute R script
         run: |
           Rscript R/DataManagement31.R
@@ -686,9 +716,9 @@ The workflow action would look like the image below, updating whenever we push a
 
 Every time it reruns, new plots will be created automatically with updated data (if any) and with a time stamp at the end of the plot name as follows:
 
-![](images/Add plot figure.png)
+![](images/Add%20plot%20figure.png)
 
-![](images/Add plot figure2.png)
+![](images/Add%20plot%20figure2.png)
 
 # Part4: Data Analysis
 
@@ -724,7 +754,9 @@ The average order value is calculated for each city, offering insights into regi
 SELECT 
     c.city, 
     COUNT(*) AS number_of_orders,
-    AVG(o.quantity_of_product_ordered * (p.product_price - o.voucher_value) + s.shipping_charge) AS avg_order_value
+    AVG(o.quantity_of_product_ordered * 
+    (p.product_price - o.voucher_value) + s.shipping_charge)
+    AS avg_order_value
 FROM 
     Orders o
 JOIN 
@@ -740,16 +772,17 @@ GROUP BY
 
 ```{r}
 # Reorder the levels of the city factor based on avg_order_value
-top_city$city <- factor(top_city$city, levels = top_city$city[order(-top_city$avg_order_value)])
+top_city$city <- factor(top_city$city, 
+                    levels = top_city$city[order(-top_city$avg_order_value)])
 
 # Plotting the data with reordered levels
 ggplot(top_city, aes(x = city, y = avg_order_value)) +
   geom_bar(stat = "identity", fill = "steelblue") +
-  labs(x = "City", y = "Average Order Value", title = "Average Order Value by City") +
+  labs(x = "City", y = "Average Order Value", 
+       title = "Average Order Value by City") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
 
 3.  Product Sales Rank
 
@@ -771,13 +804,13 @@ ORDER BY
     quantity_sold DESC;
 ```
 
-
 4.  Total Sold Units by Sub-Category
 
-This table and diagram provide information regarding the total units of products sold for each sub-category, colored by their respective parent categories. Analyzing sales performance by category helps businesses understand product category popularity and sales volume. This information helps businesses understand hot product categories and those with weak performance; businesses can thus tailor-made different marketing campaign for categories according to this information.
+The below table and diagram provide information regarding the total units of products sold for each sub-category, colored by their respective parent categories. Analyzing sales performance by category helps businesses understand product category popularity and sales volume. This information helps businesses understand hot product categories and those with weak performance; businesses can thus tailor-made different marketing campaign for categories according to this information.
 
 ```{r}
-# calculate the number of units sold in each (sub)category and save the value as top_categ
+# calculate the number of units sold in each (sub)category 
+# and save the value as top_categ
 (top_categ <- RSQLite::dbGetQuery(my_connection,"SELECT 
     pc.category_id AS parent_category_id,
     pc.category_name AS parent_category_name,
@@ -795,25 +828,30 @@ JOIN
 GROUP BY 
     pc.category_id, pc.category_name, c.category_id, c.category_name
 ORDER BY 
-    pc.category_id, total_sold_unit DESC;
+    pc.category_id, total_sold_unit DESC
+LIMIT 10;
 "))
 ```
 
 ```{r}
-# visualize the total sold unit by (sub)category and color them with their corresponding parent categories
+# visualize the total sold unit by (sub)category 
+# and color them with their corresponding parent categories
 top_categ_summary <- top_categ %>%
   group_by(category_name, parent_category_name) %>%
   summarise(total_sold_unit = sum(total_sold_unit)) %>%
-  arrange(desc(total_sold_unit))  # Arrange in descending order based on total_sold_unit
+  #Arrange in descending order based on total_sold_unit
+  arrange(desc(total_sold_unit))
 
 # Reorder category_name based on total_sold_unit
 top_categ_summary$category_name <- factor(top_categ_summary$category_name, 
-                                          levels = top_categ_summary$category_name[order(-top_categ_summary$total_sold_unit)])
+levels = top_categ_summary$category_name[order(-top_categ_summary$total_sold_unit)])
 
 # Plotting the reordered data
-ggplot(top_categ_summary, aes(x = category_name, y = total_sold_unit, fill = parent_category_name)) +
+ggplot(top_categ_summary, aes(x = category_name, y = total_sold_unit, 
+                              fill = parent_category_name)) +
   geom_bar(stat = "identity") +
-  labs(x = "Category", y = "Total Sold Units", title = "Total Sold Units by Category") +
+  labs(x = "Category", y = "Total Sold Units",
+       title = "Total Sold Units by Category") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_discrete(name = "Parent Category")
@@ -821,10 +859,11 @@ ggplot(top_categ_summary, aes(x = category_name, y = total_sold_unit, fill = par
 
 5.  Total Sold Units by Parent Category
 
-This diagram further summarizes the total units of products sold for each parent category. 
+This diagram further summarizes the total units of products sold for each parent category. Analyzing sales performance at the parent category level provides businesses with information into overall product category performance.
 
 ```{r}
-# calculate the sold units for each parent category and save the value as top_parent_categ
+# calculate the sold units for each parent category 
+# and save the value as top_parent_categ
 (top_parent_categ <- RSQLite::dbGetQuery(my_connection,"
 SELECT 
     pc.category_id AS parent_category_id,
@@ -847,10 +886,11 @@ ORDER BY
 
 ```{r}
 # visualize the total sold units by parent category with ggplot bar chart
-ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit #, fill = parent_category_name
+ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit 
                              )) +
   geom_bar(stat = "identity") +
-  labs(x = "Parent Category", y = "Total Sold Units", title = "Total Sold Units by Parent Category") +
+  labs(x = "Parent Category", y = "Total Sold Units", 
+       title = "Total Sold Units by Parent Category") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_discrete(name = "Parent Category")
@@ -858,7 +898,7 @@ ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit #, fi
 
 6.  Top Recommenders
 
-This table and diagram show the top customers who have referred the highest number of new customers. Understanding and acknowledging top referrers is of integral importance for businesses to encourage and reward loyal customers in the future, foster word-of-mouth marketing, and drive customer acquisition through referral programs.
+The below table and diagram show the top customers who have referred the highest number of new customers. Understanding and acknowledging top referrers is of integral importance for businesses to encourage and reward loyal customers in the future, foster word-of-mouth marketing, and drive customer acquisition through referral programs.
 
 ```{r}
 # save the top 20 recommenders in top_recommender
@@ -882,7 +922,8 @@ LIMIT 20;
 # plot the top 20 recommenders by ggplot
 ggplot(top_recommender, aes(x = customer_name, y = referred_number)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
-  labs(x = "Customer Name", y = "Number of Referrals", title = "Top 20 Recommenders") +
+  labs(x = "Customer Name", y = "Number of Referrals", 
+       title = "Top 20 Recommenders") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   coord_flip() 
@@ -890,18 +931,21 @@ ggplot(top_recommender, aes(x = customer_name, y = referred_number)) +
 
 7.  Warehouse Capacity and Current Stock
 
-This bar plot represents the comparison between warehouse capacity (in blue) and current stock quantities (in pink) for each warehouse; we can easily compare the stock level with the diagram. We filtered only those with current stock more than half of the capacity to focus more on those with higher possibility to experience overstoking. Understanding the capacity versus actual stock levels is vital for inventory management and logistics planning. It helps businesses ensure optimal stock levels, and avoid stock-outs or overstocking situations.
+The bar plot represents the comparison between warehouse capacity (in blue) and current stock quantities (in pink) for each warehouse; we can easily compare the stock level with the diagram. We filtered only those with current stock more than 80% of the capacity to focus more on those with higher possibility to experience overstocking. Understanding the capacity versus actual stock levels is vital for inventory management and logistics planning. It helps businesses ensure optimal stock levels, and avoid stock-outs or overstocking situations.
 
 ```{r}
-# filter only those with current stock more than half of the capacity
+# filter only those with current stock more than 80% of the capacity
 filtered_warehouse <- Warehouse %>%
-  filter(current_stock > capacity / 2)
+  filter(current_stock > capacity / 1.25)
 
 # Plotting with filtered data to see the stock level for these warehouses
 ggplot(filtered_warehouse, aes(x = warehouse_id)) +
-  geom_bar(aes(y = capacity), stat = "identity", fill = "steelblue", alpha = 0.8) +
-  geom_bar(aes(y = current_stock), stat = "identity", fill = "lightpink", alpha = 0.8) +
-  labs(title = "Warehouse Capacity and Current Stock", x = "Warehouse ID", y = "Quantity") +
+  geom_bar(aes(y = capacity), stat = "identity", 
+           fill = "steelblue", alpha = 0.8) +
+  geom_bar(aes(y = current_stock), stat = "identity", 
+           fill = "lightpink", alpha = 0.8) +
+  labs(title = "Warehouse Capacity and Current Stock", 
+       x = "Warehouse ID", y = "Quantity") +
   theme_minimal() +
   theme(legend.position = "top") +
   scale_fill_manual(values = c("steelblue", "lightpink"), 
@@ -936,7 +980,9 @@ product_ratings <- product_ratings[order(-product_ratings$avg_rating),]
 top_products <- product_ratings[product_ratings$avg_rating == 5,]
 
 # visualize the rating by ggplot
-ggplot(product_ratings, aes(x = reorder(product_id, -avg_rating), y = avg_rating, fill = factor(product_id %in% top_products$product_id))) +
+ggplot(product_ratings, aes(x = reorder(product_id, -avg_rating),
+                            y = avg_rating, 
+                    fill = factor(product_id %in% top_products$product_id))) +
   geom_bar(stat = "identity") +
   labs(x = "Product ID", y = "Average Rating",
        title = "Average Rating for Each Product") +
@@ -952,7 +998,7 @@ Tracking the number of products ordered per day helps in identifying peak sales 
 ```{r}
 # ensure that data type are correct before calculating and viualizing them
 Orders$order_date <- as.Date(Orders$order_date)
-Orders$quantity_of_product_ordered <- as.numeric(Orders$quantity_of_product_ordered)
+Orders$quantity_of_product_ordered<-as.numeric(Orders$quantity_of_product_ordered)
 
 # calculate the number of products ordered every day
 agg_data <- Orders %>%
@@ -962,10 +1008,11 @@ agg_data <- Orders %>%
 # plot the result using ggplot
 ggplot(agg_data, aes(x = order_date, y = total_quantity)) +
   geom_line(stat = "identity", color = "steelblue") +
-  labs(x = "Order Date", y = "Total Quantity Ordered", title = "Number of Products Ordered per Day")
+  labs(x = "Order Date", y = "Total Quantity Ordered",
+       title = "Number of Products Ordered per Day")
 ```
 
-10.  Units Sold by Parent Category Across Time (filter3)
+10. Units Sold by Parent Category Across Time
 
 Analyzing units sold by each parent category across time helps in identifying top-performing parent categories, tracking sales and market trends over time, and optimizing marketing strategies for different parent categories.
 
@@ -979,7 +1026,8 @@ Category$parent_id <- as.character(Category$parent_id)
 
 # use self join for Category table
 Category <- Category %>%
-  left_join(Category, by = c("parent_id" = "category_id"), suffix = c("", "_parent"))
+  left_join(Category, by = c("parent_id" = "category_id"), 
+            suffix = c("", "_parent"))
 
 # create the parent_name column based on the join result
 Category <- Category %>%
@@ -998,8 +1046,10 @@ filtered_sales_data <- sales_data %>%
   filter(parent_name %in% c("Denim", "Dresses", "Tops"))
 
 # Plotting the filtered data
-ggplot(filtered_sales_data, aes(x = order_date, y = units_sold, color = parent_name)) +
+ggplot(filtered_sales_data, aes(x = order_date, y = units_sold, 
+                                color = parent_name)) +
   geom_line() +
-  labs(x = "Order Date", y = "Units Sold", title = "Units Sold by Parent Category Across Time") +
+  labs(x = "Order Date", y = "Units Sold", 
+       title = "Units Sold by Parent Category Across Time") +
   scale_color_discrete(name = "Parent Category")
 ```
