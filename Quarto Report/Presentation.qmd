@@ -53,7 +53,6 @@ Below are shown the relationship sets used in the E-R diagram:
 
 ![](Cardinality.png)
 
-![]()
 
 ## SQL Database Schema Creation
 
@@ -90,7 +89,7 @@ my_connection <- RSQLite::dbConnect(RSQLite::SQLite(),"e-commerce.db")
 We start by creating a Category table to store information about different product categories.This table will serve as the fundamental component of our database schema, providing a structured framework for organizing and categorizing our product inventory. The Category table will include fields to store unique identifiers for each category, along with their respective names and any hierarchical relationships, such as parent categories.
 
 ```{sql connection=my_connection}
---Check if the table exists and drops it if it does, ensureinfa clean slate for creating the table
+--Check if the table exists and drops it if it does, ensure a clean slate for creating the table
 DROP TABLE IF EXISTS Category;
 ```
 
@@ -98,8 +97,7 @@ DROP TABLE IF EXISTS Category;
 CREATE TABLE IF NOT EXISTS Category(
   category_id VARCHAR(20) PRIMARY KEY NOT NULL,
   category_name VARCHAR (20) NOT NULL,
-  parent_id VARCHAR(20),
-  parent_name VARCHAR (20)
+  parent_id VARCHAR(20)
   );
   
 ```
@@ -130,7 +128,7 @@ CREATE TABLE IF NOT EXISTS Customer(
 
 Supplier table
 
-The Supplier table aims to centralize essential details about each supplier, including their unique identifier, contact information, banking details, and performance metrics. This table plays a pivotal role in supplier management, enabling to track supplier ratings, monitor transactional activities, and streamline procurement processes.
+The Supplier table aims to centralize essential details about each supplier, including their unique identifier, contact information, banking details, and performance metrics. This table plays a pivotal role in supplier management, enabling to track supplier ratings, monitor transaction activities, and streamline procurement processes.
 
 ```{sql connection=my_connection}
 DROP TABLE IF EXISTS Supplier;
@@ -139,15 +137,15 @@ DROP TABLE IF EXISTS Supplier;
 ```{sql connection=my_connection}
 CREATE TABLE IF NOT EXISTS Supplier (
     seller_id VARCHAR(50) PRIMARY KEY NOT NULL,
-    seller_store_name VARCHAR(100),
-    supplier_email VARCHAR(255),
-    password_s VARCHAR(255),
-    receiving_bank VARCHAR(50),
+    seller_store_name VARCHAR(100) NOT NULL,
+    supplier_email VARCHAR(255) NOT NULL,
+    password_s VARCHAR(255) NOT NULL,
+    receiving_bank VARCHAR(50) NOT NULL,
     seller_rating INT,
-    seller_phone_number VARCHAR(20),
-    seller_address_street VARCHAR(255),
-    s_post_code VARCHAR(50),
-    s_city VARCHAR(50)
+    seller_phone_number VARCHAR(20) NOT NULL,
+    seller_address_street VARCHAR(255) NOT NULL,
+    s_post_code VARCHAR(50) NOT NULL,
+    s_city VARCHAR(50) NOT NULL
     );
 
 ```
@@ -163,11 +161,11 @@ DROP TABLE IF EXISTS Warehouse;
 ```{sql connection=my_connection}
 CREATE TABLE IF NOT EXISTS Warehouse (
     warehouse_id VARCHAR(50) PRIMARY KEY NOT NULL,
-    capacity INT,
-    current_stock INT,
-    w_city VARCHAR(50),
-    w_post_code VARCHAR(50),
-    w_address_street VARCHAR(255)
+    capacity INT NOT NULL,
+    current_stock INT NOT NULL,
+    w_city VARCHAR(50) NOT NULL,
+    w_post_code VARCHAR(50) NOT NULL,
+    w_address_street VARCHAR(255) NOT NULL
     );
 ```
 
@@ -183,13 +181,13 @@ DROP TABLE IF EXISTS Product;
 ```{sql connection=my_connection}
 CREATE TABLE IF NOT EXISTS Product (
   product_id INT PRIMARY KEY NOT NULL,
-  product_name VARCHAR(50),
-  category_id VARCHAR(20),
+  product_name VARCHAR(50) NOT NULL,
+  category_id VARCHAR(20) NOT NULL,
   warehouse_id VARCHAR(50),
-  seller_id VARCHAR(50),
-  product_weight FLOAT,
-  product_price FLOAT,
-  product_size VARCHAR(20),
+  seller_id VARCHAR(50) NOT NULL,
+  product_weight FLOAT NOT NULL,
+  product_price FLOAT NOT NULL,
+  product_size VARCHAR(20) NOT NULL,
   FOREIGN KEY (seller_id) REFERENCES Supplier(seller_id)
   FOREIGN KEY (category_id) REFERENCES Category(category_id),
   FOREIGN KEY (warehouse_id) REFERENCES Warehouse(warehouse_id)
@@ -208,8 +206,8 @@ DROP TABLE IF EXISTS Shipment;
 ```{sql connection=my_connection}
 CREATE TABLE IF NOT EXISTS Shipment (
     shipment_id VARCHAR(50) PRIMARY KEY NOT NULL,
-    shipping_method VARCHAR(50),
-    shipping_charge FLOAT
+    shipping_method VARCHAR(50) NOT NULL,
+    shipping_charge FLOAT NOT NULL
     );
 ```
 
@@ -225,12 +223,12 @@ DROP TABLE IF EXISTS Orders;
 CREATE TABLE IF NOT EXISTS Orders (
     order_id VARCHAR(50) NOT NULL,
     order_date DATE NOT NULL,
-    order_status VARCHAR(50),
-    quantity_of_product_ordered INT,
-    payment_method VARCHAR(50),
-    voucher_value INT,
+    order_status VARCHAR(50) NOT NULL,
+    quantity_of_product_ordered INT NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    voucher_value INT NOT NULL,
     review_rating INT,
-    shipment_id VARCHAR(50),
+    shipment_id VARCHAR(50) NOT NULL,
     product_id VARCHAR(50) NOT NULL,
     customer_id VARCHAR(50) NOT NULL,
     PRIMARY KEY (order_id, customer_id, product_id),
@@ -337,267 +335,303 @@ def customer_data(num_customers, postcode_city_data, filename):
 13. There are 5 order statuses: processing, paid, shipping, done, and return.
 14. Orders cannot be cancelled but can be returned.
 15. There are 3 shipping methods: one-day, three-days, and seven-day.
-16. Shipping charge is based on which shipping methods the customer chose. 17. There are 5 types of payment methods: Apple Pay, Mastercard, Visa, Google Pay, Paypal. A customer can only pay via one payment method for each order.
-17. The vouchers are price discounts in pounds.
-18. Each product can only use one voucher; each order can apply to multiple vouchers.
-19. voucher_value equals zero means that no discount is applied to that ordered product.
+16. Shipping charge is based on which shipping methods the customer chose.
+17. There are 5 types of payment methods: Apple Pay, Mastercard, Visa, Google Pay, Paypal. A customer can only pay via one payment method for each order.
+18. The vouchers are price discounts in pounds.
+19. Each product can only use one voucher; each order can apply to multiple vouchers.
+20. 'voucher_value' equals zero means that no discount is applied to that ordered product.
+21. All suppliers must provide a store name, receiving bank account, phone number, and address information.
+22. If there is no rating left for the supplier, the 'seller_rating' column will be blank (NA).
+23. Suppliers must provide product price, weight, and size information for every product they sell.
 
 ## Data Import and Quality Assurance
 
-Read .csv files from the old_data folder, and make sure that some columns such as ids are character instead of number, so that when writing them to the database, they will not show in decimal format.
+Before reading and writing data into the database, we would check the uniqueness of primary key for all of the file.
+
+```{r checkprimary_category,message=FALSE,warning=FALSE,attr.source='.numberLines'}
+# primary key check for category data
+all_files <- list.files("data_upload/Category_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Category_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+```
+
+```{r checkprimary_customer,message=FALSE,warning=FALSE,attr.source='.numberLines'}
+# primary key check for customer data
+all_files <- list.files("data_upload/Customer_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Customer_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+```
+
+```{r checkprimary_warehouse,message=FALSE,warning=FALSE,attr.source='.numberLines'}
+# primary key check for warehouse data
+all_files <- list.files("data_upload/Warehouse_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Warehouse_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+```
+
+```{r checkprimary_supplier,message=FALSE,warning=FALSE,attr.source='.numberLines'}
+# primary key check for supplier data
+all_files <- list.files("data_upload/Supplier_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Supplier_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+```
+
+```{r checkprimary_product, message=FALSE,warning=FALSE,attr.source='.numberLines'}
+# primary key check for product data
+all_files <- list.files("data_upload/Product_dataset/")
+
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Product_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ", nrow(unique(this_file_contents[,1])) == number_of_rows))
+}
+```
+
+```{r checkprimary_shipment,message=FALSE,warning=FALSE,attr.source='.numberLines'}
+# primary key check for shipment data
+all_files <- list.files("data_upload/Shipment_dataset/")
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Shipment_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+}
+```
+
+```{r checkprimary_orders,message=FALSE,warning=FALSE,attr.source='.numberLines'}
+# primary key check for order data
+all_files <- list.files("data_upload/Orders_dataset/")
+
+for (variable in all_files) {
+  this_filepath <- paste0("data_upload/Orders_dataset/",variable)
+  this_file_contents <- readr::read_csv(this_filepath)
+  number_of_rows <- nrow(this_file_contents)
+  
+  print(paste0("Checking for: ",variable))
+  
+  print(paste0(" is ", nrow(unique(this_file_contents[,1])) == number_of_rows))
+}
+```
+
+Except for order data, the uniqueness of the primary keys in other data are ensured. Since the primary key for Orders table is a composite of three columns, we will check the primary key for this table after appending data into the database.
+
+Read .csv files from the data_upload folder and write them into the database by using **append = TRUE** function so that these data will not destroy the data type we set before; make sure that columns such as ids are character instead of number, so that when writing them to the database, they will not show in decimal format.
 
 ```{r dataloading,message=FALSE,warning=FALSE}
-Category <- readr::read_csv("/cloud/project/old_data/category_data.csv")
-Category$category_id <- as.character(Category$category_id)
-Category$parent_id <- as.character(Category$parent_id)
-
-
-Customer <- readr::read_csv("/cloud/project/old_data/customer_data.csv")
-Customer$customer_id <- as.character(Customer$customer_id)
-Customer$referral_by <- as.character(Customer$referral_by)
-
-
-Supplier <- readr::read_csv("/cloud/project/old_data/supplier_data.csv")
-Supplier$seller_id <- as.character(Supplier$seller_id)
-
-
-Warehouse <- readr::read_csv("/cloud/project/old_data/warehouse_data.csv")
-Warehouse$warehouse_id <- as.character(Warehouse$warehouse_id)
-
-
-Product <- readr::read_csv("/cloud/project/old_data/product_data.csv")
-Product$product_id <- as.character(Product$product_id)
-Product$seller_id <- as.character(Product$seller_id)
-Product$warehouse_id <- as.character(Product$warehouse_id)
-Product$category_id <- as.character(Product$category_id)
-
-
-Shipment <- readr::read_csv("/cloud/project/old_data/shipment_data.csv")
-Shipment$shipment_id <- as.character(Shipment$shipment_id)
-
-
-Orders <- readr::read_csv("/cloud/project/old_data/order_data.csv")
-
-Orders$order_date <- as.Date(Orders$order_date, format = "%Y/%m/%d")
-Orders$order_date <- as.character(Orders$order_date)
-Orders$order_id <- as.character(Orders$order_id)
-Orders$customer_id <- as.character(Orders$customer_id)
-Orders$product_id <- as.character(Orders$product_id)
-Orders$shipment_id <- as.character(Orders$shipment_id)
-
-```
-
-Before writing data into the database, we would check the uniqueness of primary key for all of the file.
-
-```{r checkprimary_old,message=FALSE,warning=FALSE,attr.source='.numberLines'}
-all_files <- list.files("old_data/")
-
-
-for (variable in all_files) {
-  this_filepath <- paste0("old_data/",variable)
-  this_file_contents <- readr::read_csv(this_filepath)
-  number_of_rows <- nrow(this_file_contents)
-  
-  print(paste0("Checking for: ",variable))
-  
-  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
+# set a function to list all csv files in the assigned path
+list_csv_files <- function(folder_path) {
+  files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
+  return(files)
 }
+
+# create a folder and table name mapping for later use
+folder_table_mapping <- list(
+  "Customer_dataset" = "Customer",
+  "Supplier_dataset" = "Supplier",
+  "Category_dataset" = "Category",
+  "Product_dataset" = "Product",
+  "Orders_dataset" = "Orders",
+  "Warehouse_dataset" = "Warehouse",
+  "Shipment_dataset" = "Shipment"
+)
+
+# make sure some columns are in the data type we want before writing data into the database
+convert_column_types <- function(data, column_types) {
+  for (col_name in names(column_types)) {
+    if (col_name %in% names(data)) {
+      col_type <- column_types[[col_name]]
+      if (col_type == "character") {
+        data[[col_name]] <- as.character(data[[col_name]])
+      } else if (col_type == "date") {
+        data[[col_name]] <- as.Date(data[[col_name]], format = "%Y/%m/%d")
+        data[[col_name]] <- as.character(data[[col_name]])
+      }
+    }
+  }
+  return(data)
+}
+
+# Data type mapping for each table's columns
+column_types_mapping <- list(
+  "Category" = c("category_id" = "character", "parent_id" = "character"),
+  "Customer" = c("customer_id" = "character", "referral_by" = "character"),
+  "Supplier" = c("seller_id" = "character"),
+  "Warehouse" = c("warehouse_id" = "character"),
+  "Product" = c("product_id" = "character", "seller_id" = "character", 
+                "warehouse_id" = "character", "category_id" = "character"),
+  "Shipment" = c("shipment_id" = "character"),
+  "Orders" = c("order_id" = "character", "customer_id" = "character", 
+               "product_id" = "character", "shipment_id" = "character",
+               "order_date" = "date")
+)
+
+# Path to the main folder containing sub-folders
+main_folder <- "data_upload"
+
+# Process each sub-folder (table)
+for (folder_name in names(folder_table_mapping)) {
+  folder_path <- file.path(main_folder, folder_name)
+  if (dir.exists(folder_path)) {
+    cat("Processing folder:", folder_name, "\n")
+    # List CSV files in the sub-folder
+    csv_files <- list_csv_files(folder_path)
+    
+    # Get the corresponding table name from the mapping
+    table_name <- folder_table_mapping[[folder_name]]
+    
+    # Append data from CSV files to the corresponding table
+    for (csv_file in csv_files) {
+      cat("Appending data from:", csv_file, "\n")
+      tryCatch({
+        # Read CSV file
+        file_contents <- readr::read_csv(csv_file)
+        
+        # Convert column data types
+        file_contents <- convert_column_types(file_contents, column_types_mapping[[table_name]])
+        
+        # Append data to the table in SQLite
+        RSQLite::dbWriteTable(my_connection, table_name, file_contents, append = TRUE)
+        cat("Data appended to table:", table_name, "\n")
+      }, error = function(e) {
+        cat("Error appending data:", csv_file, "\n")
+        cat("Error message:", e$message, "\n")
+      })
+    }
+  } else {
+    cat("Folder does not exist:", folder_path, "\n")
+  }
+}
+
+# List tables to confirm data appending
+tables <- RSQLite::dbListTables(my_connection)
+print(tables)
+
 ```
 
-Except for order data, the uniqueness of the primary keys in other data are ensured. Since the primary key for Orders table is a composite of three columns, as explained above, we will check the primary key for this table after appending data into the database.
+As can be seen here, 7 tables were created successfully with assigned table names.
 
-Write these data to the e-commerce database using **append=TRUE** so that the data will not overwrite the data type we set when creating empty tables.
-
-```{r writebacktodb}
-RSQLite::dbWriteTable(my_connection,"Category",Category,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Customer",Customer,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Supplier",Supplier,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Warehouse",Warehouse,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Product",Product,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Shipment",Shipment,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Orders",Orders,append=TRUE)
-
-```
-
-Use **PRAGMA table_info()** to verify the primary key, column names, data type, and NOT NULL setting of each table we created.
+Use **PRAGMA table_info()** to verify the primary key, column names, data type, and NOT NULL setting of each table we created again.
 
 ```{sql connection=my_connection}
 PRAGMA table_info(Customer);
 ```
 
-```{sql connection=my_connection}
-PRAGMA table_info(Category);
-```
-
-```{sql connection=my_connection}
-PRAGMA table_info(Supplier);
-```
-
-```{sql connection=my_connection}
-PRAGMA table_info(Warehouse);
-```
-
-```{sql connection=my_connection}
-PRAGMA table_info(Product);
-```
-
-```{sql connection=my_connection}
-PRAGMA table_info(Shipment);
-```
-
-```{sql connection=my_connection}
-PRAGMA table_info(Orders);
-```
-
-Since the primary of Orders table are a composite of order_id, customer_id, and product_id, so in the 'pk' column it marks these three columns from 1 to 3 and leaves others as 0.
-
-We then read data in the new_data folder in to simulate what would happen when new data comes in to the current database.
-
-```{r newdataloading,message=FALSE,warning=FALSE}
-Category_new <- readr::read_csv("/cloud/project/new_data/category_data_new.csv")
-Category_new$category_id <- as.character(Category_new$category_id)
-Category_new$parent_id <- as.character(Category_new$parent_id)
-
-
-Customer_new <- readr::read_csv("/cloud/project/new_data/customer_data_new.csv")
-Customer_new$customer_id <- as.character(Customer_new$customer_id)
-Customer_new$referral_by <- as.character(Customer_new$referral_by)
-
-
-Supplier_new <- readr::read_csv("/cloud/project/new_data/supplier_data_new.csv")
-Supplier_new$seller_id <- as.character(Supplier_new$seller_id)
-
-
-Warehouse_new <- readr::read_csv("/cloud/project/new_data/warehouse_data_new.csv")
-Warehouse_new$warehouse_id <- as.character(Warehouse_new$warehouse_id)
-
-
-Product_new <- readr::read_csv("/cloud/project/new_data/product_data_new.csv")
-Product_new$product_id <- as.character(Product_new$product_id)
-Product_new$seller_id <- as.character(Product_new$seller_id)
-Product_new$warehouse_id <- as.character(Product_new$warehouse_id)
-Product_new$category_id <- as.character(Product_new$category_id)
-
-
-Shipment_new <- readr::read_csv("/cloud/project/new_data/shipment_data_new.csv")
-Shipment_new$shipment_id <- as.character(Shipment_new$shipment_id)
-
-
-Orders_new <- readr::read_csv("/cloud/project/new_data/order_data_new.csv")
-
-Orders_new$order_date <- as.Date(Orders_new$order_date, format = "%Y/%m/%d")
-Orders_new$order_date <- as.character(Orders_new$order_date)
-Orders_new$order_id <- as.character(Orders_new$order_id)
-Orders_new$customer_id <- as.character(Orders_new$customer_id)
-Orders_new$product_id <- as.character(Orders_new$product_id)
-Orders_new$shipment_id <- as.character(Orders_new$shipment_id)
-
-```
-
-Before writing data into the database, we would check the uniqueness of primary key for all of the files.
-
-```{r checkprimary,message=FALSE,warning=FALSE,attr.source='.numberLines'}
-all_files <- list.files("new_data/")
-
-
-for (variable in all_files) {
-  this_filepath <- paste0("new_data/",variable)
-  this_file_contents <- readr::read_csv(this_filepath)
-  number_of_rows <- nrow(this_file_contents)
-  
-  print(paste0("Checking for: ",variable))
-  
-  print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
-}
-```
-
-Except for order data, the uniqueness of the primary keys in other data are ensured. Since the primary key for Orders table is a composite of three columns, as explained above, we will check the primary key for this table after appending data into the database.
-
-Similarly, we use **append=TRUE** to write these new data to the database.
-
-```{r writebacktodbnew}
-RSQLite::dbWriteTable(my_connection,"Category",Category_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Customer",Customer_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Supplier",Supplier_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Warehouse",Warehouse_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Product",Product_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Shipment",Shipment_new,append=TRUE)
-RSQLite::dbWriteTable(my_connection,"Orders",Orders_new,append=TRUE)
-```
-
-Use **PRAGMA table_info()** again to verify the primary key, column names, data type, and NOT NULL setting of each table we created.
-
-```{sql connection=my_connection}
-PRAGMA table_info(Customer);
-```
+In Customer table, 'customer_id' is the only primary key; all columns except for 'referral_by' should be NOTNULL. Column names and data types match what we set when creating the table.
 
 ```{sql connection=my_connection}
 PRAGMA table_info(Category);
 ```
 
+In Category table, 'category_id' is the only primary key; 'category_id' and 'category_name' follow the NOTNULL rule. Column names and data types match what we set when creating the table.
+
 ```{sql connection=my_connection}
 PRAGMA table_info(Supplier);
 ```
+
+In Supplier table, 'seller_id' is the only primary key; except for 'seller_rating', all columns follow the NOTNULL rule. Column names and data types match what we set when creating the table.
 
 ```{sql connection=my_connection}
 PRAGMA table_info(Warehouse);
 ```
 
+In Warehouse table, 'warehouse_id' is the only primary key; all columns follow the NOTNULL rule. Column names and data types match what we set when creating the table.
+
 ```{sql connection=my_connection}
 PRAGMA table_info(Product);
 ```
+
+In Product table, 'product_id' is the only primary key; all columns except for 'warehouse_id' follow the NOTNULL rule. Column names and data types match what we set when creating the table.
 
 ```{sql connection=my_connection}
 PRAGMA table_info(Shipment);
 ```
 
+In Shipment table, 'shipment_id' is the only primary key; all columns follow the NOTNULL rule. Column names and data types match what we set when creating the table.
+
 ```{sql connection=my_connection}
 PRAGMA table_info(Orders);
 ```
 
-Since the primary of Orders table are a composite of order_id, customer_id, and product_id, so in the 'pk' column it marks these three columns from 1 to 3 and leaves others as 0.
+Since the primary of Orders table are a composite of order_id, customer_id, and product_id, so in the 'pk' column it marks these three columns from 1 to 3 and leaves others as 0. All columns except for 'review_rating' follow the NOTNULL rule. Column names and data types match what we set when creating the table.
 
-Combine new data to the current tables for the following visualization and analysis.
+In the end of this section, we read these tables into data frame in R for the following analysis and visualization.
 
-```{r}
-Warehouse <- rbind(Warehouse, Warehouse_new)
-Product <- rbind(Product, Product_new)
-Customer <- rbind(Customer, Customer_new)
-Category <- rbind(Category, Category_new)
-Supplier <- rbind(Supplier, Supplier_new)
-Orders <- rbind(Orders, Orders_new)
-Shipment <- rbind(Shipment, Shipment_new)
-
+```{r, warning=FALSE}
+Customer <- dbGetQuery(my_connection, "SELECT * FROM Customer")
+Supplier <- dbGetQuery(my_connection, "SELECT * FROM Supplier")
+Warehouse <- dbGetQuery(my_connection, "SELECT * FROM Warehouse")
+Product <- dbGetQuery(my_connection, "SELECT * FROM Product")
+Orders <- dbGetQuery(my_connection, "SELECT * FROM Orders")
+Shipment <- dbGetQuery(my_connection, "SELECT * FROM Shipment")
+Category <- dbGetQuery(my_connection, "SELECT * FROM Category")
 ```
 
 # Data Pipeline Generation
 
 In this section, we focus on setting up a data pipeline for efficient management and version control of our project using GitHub. The link to the team's GitHub work space is:
 
-[\<<https://github.com/LETIMEI/Group31_Data-Management%3E.>]{.underline}
+[[https://github.com/LETIMEI/Group31_Data-Managemen]{.underline}](https://github.com/LETIMEI/Group31_Data-Management%3E.){.uri}[[t]{.underline}](https://github.com/LETIMEI/Group31_Data-Management)
 
 ## GitHub repository and Workflow Setup
 
-The objective here is to utilize a GitHub repository to manage our project. We connected our file on Posit Cloud with the GitHub work space, and used 'push' and 'pull' to control the version and synchrinize necessary files and script to run in the workflow.
+The objective here is to utilize a GitHub repository to manage our project. We connected our file on Posit Cloud with the GitHub work space, and used 'push' and 'pull' to control the version and synchronize necessary files and script to run in the workflow.
 
 ![](GitHub_screenshot.png)
 
 ## GitHub Action for Continuous Integration
 
-Subsequently, we established our workflow as outlined below. We specified the interval for script reruns, identified required packages, defined the script to execute, designated the file path for saved figures, and specified the token name for reference:
-
 By setting up workflows triggered by specific events like pushes or pull requests, we can automate data validation, database updates, and execute basic data analysis tasks seamlessly within our development environment.
 
-We specified the interval for script reruns, identified required packages, defined the script to execute, designated the file path for saved figures, and specified the token name for reference:
+Subsequently, we established our workflow as outlined below. We specified the interval and some conditions for the R script reruns, identified required packages, defined the script to execute, designated the file path for saved figures, and specified the token name for reference:
 
 ```         
-name: Update Repo with result
- 
+name: Update Repository with Result
+
 on:
   schedule:
-    - cron: '0 */3 * * *' # Run every 3 hours
+    - cron: '0 */12 * * *' # Run every 12 hours
   push:
     branches: [ master ]
+    paths:
+     - '.github/workflows/**' # Run whenever the workflow code update
+     - 'R/**'  # Run whenever the R script update
+     - 'data_upload/**'  # Run whenever new data uploaded to the data_upload folder
+    
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -621,7 +655,7 @@ jobs:
           Rscript -e 'install.packages(c("readr","ggplot2","RSQLite", "dplyr","chron","png"))'
       - name: Execute R script
         run: |
-          Rscript DataManagement31.R
+          Rscript R/DataManagement31.R
       - name: Add files
         run: |
           git config --local --unset-all "http.https://github.com/.extraheader"
@@ -630,10 +664,12 @@ jobs:
           git add --all figures/
       - name: Commit files
         run: |
-          git commit -m "Add regression plot figure"
+          git commit -m "Add plot figure"
       - name: Pull changes
         run: |
+          git stash save "temp changes"
           git pull --no-rebase origin master
+          git stash pop
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
@@ -641,21 +677,27 @@ jobs:
             branch: master
 ```
 
-The workflow action would look like the image below, updating whenever we push an updated script or edit the workflow code, or for every 3 hours.
+The workflow action would look like the image below, updating whenever we push an updated script, edit the workflow code, update new data to the data_upload folder, or for every 12 hours.
 
 ![](Workflow_screenshot.png)
 
+Every time it reruns, new plots will be created automatically with updated data (if any) and with a time stamp at the end of the plot name as follows:
+
+![](Add%20plot%20figure.png)
+
+![](Add%20plot%20figure2.png)
+
 # Data Analysis
 
-## Advanced Data Analysis with SQL andR
+## Advanced Data Analysis with SQL and R
 
 (1) Rank order value from highest to lowest
 
-    Orders are ranked based on their total value, factoring in product quantities, prices, voucher discounts, and shipping charges.
+Orders are ranked based on their total value, factoring in product quantities, prices, voucher discounts, and shipping charges.
 
-    By joining the Orders, Product, and Shipment tables, the query calculates the total value of each order and orders them in descending value.
+By joining the Orders, Product, and Shipment tables, the query calculates the total value of each order and orders them in descending value.
 
-    Identifying high-value orders allows for targeted appreciation/marketing strategies, such as personalized thank-you or exclusive offers, to further enhance customer loyalty among high spenders.
+Identifying high-value orders allows for targeted appreciation/marketing strategies, such as personalized thank-you or exclusive offers, to further enhance customer loyalty among high spenders.
 
 ```{sql connection=my_connection}
 SELECT 
@@ -677,7 +719,7 @@ ORDER BY
 
 2.  Identify Customers with Most Orders
 
-Customers are identified based on the number of orders they have placed, highlighting the most active shoppers .This is achieved by joining the Orders and Customer tables and counting the number of orders per customer. Recognizing and rewarding these customers with loyalty programs or special promotions can encourage continued patronage and foster a strong customer-brand relationship
+Important customers are identified based on the number of orders they have placed, highlighting the most active shoppers .This is achieved by joining the Orders and Customer tables and counting the number of orders per customer. Recognizing and rewarding these customers with loyalty programs or special promotions can encourage continued patronage and foster a strong customer-brand relationship.
 
 ```{sql connection=my_connection}
 SELECT 
@@ -758,9 +800,11 @@ ORDER BY
 LIMIT 5;
 ```
 
-6.  
-```{sql connection=my_connection}
+6.  Total Cost per Order
 
+This information helps in identifying high-cost orders and customers with high purchase power.
+
+```{sql connection=my_connection}
 SELECT 
     o.customer_id,
     o.order_id,
@@ -779,7 +823,9 @@ ORDER BY
     total_cost DESC;
 ```
 
-7.  Rank product by their sold quantity
+7.  Product Sales Rank
+
+Analyzing product sales performance is critical for businesses to understand product popularity and sales volume. This information helps in identifying top-selling products, evaluating demand trends, and further optimizing decisions regarding product promotions and pricing strategies.
 
 ```{sql connection=my_connection}
 SELECT 
@@ -797,7 +843,9 @@ ORDER BY
     quantity_sold DESC;
 ```
 
-8.  Rank categories by sold quantity
+8.  Category-wise Sales Analysis
+
+Analyzing sales performance by category helps businesses understand product category popularity and sales volume. This information helps businesses understand hot product categories and those with weak performance; businesses can thus tailor-made different marketing campaign for categories according to this information.
 
 ```{sql connection=my_connection}
 SELECT 
@@ -816,7 +864,9 @@ ORDER BY
     total_sold_unit DESC;
 ```
 
-9.  Rank parent categories by sold quantity
+9.  Parent Category-wise Sales Analysis
+
+Analyzing sales performance by parent category helps businesses understand broader category popularity and sales volume trends. Businesses can design proper marketing campaign or promotion to boost sales for underperformed categories or further strengthen popular categories' sales.
 
 ```{sql connection=my_connection}
 SELECT 
@@ -837,9 +887,9 @@ ORDER BY
     total_sold_unit DESC;
 ```
 
-10.  Identify the Most Active Customers
+10. Identify the Most Active Customers
 
-The below customers showcased a substantial level of engagement with the platform, consistently placing a significant number of orders. These insights offers valuable opportunities for targeted marketing efforts and customer retention strategies. Recognizing and incentivizing these active customers can foster loyalty ,contribute to enhanced customer satisfaction and long-term business success.
+The below customers showcased a substantial level of engagement with the platform, consistently placing a significant number of orders. These insights offers valuable opportunities for targeted marketing efforts and customer retention strategies. Recognizing and encouraging these active customers can foster loyalty ,contribute to enhanced customer satisfaction and long-term business success.
 
 ```{sql connection=my_connection}
 SELECT 
@@ -855,16 +905,17 @@ GROUP BY
     o.customer_id, c.first_name, c.last_name
 ORDER BY 
     number_of_orders DESC
-LIMIT 5;
+LIMIT 10;
 ```
 
 ## Data Visualization with ggplot2 and dplyr
 
 1.  Total Sold Units by Sub-Category and Parent Category
 
-This table provides insights into the total units of products sold for each sub-category, organized under their respective parent categories. Understanding sales performance at both sub-category and parent category levels is crucial for businesses to identify top-performing product groups, optimize marketing strategies, and allocate resources effectively across different product categories.
+This table and diagram provide information regarding the total units of products sold for each sub-category, colored by their respective parent categories. Understanding sales performance at both sub-category and parent category levels is crucial for businesses to identify top-performing product groups, optimize marketing strategies, and allocate resources effectively across different product categories.
 
 ```{r}
+# calculate the number of units sold in each (sub)category and save the value as top_categ
 top_categ <- RSQLite::dbGetQuery(my_connection,"SELECT 
     pc.category_id AS parent_category_id,
     pc.category_name AS parent_category_name,
@@ -887,6 +938,7 @@ ORDER BY
 ```
 
 ```{r}
+# visualize the total sold unit by (sub)category and color them with their corresponding parent categories
 ggplot(top_categ, aes(x = category_name, y = total_sold_unit, fill = parent_category_name)) +
   geom_bar(stat = "identity") +
   labs(x = "Category", y = "Total Sold Units", title = "Total Sold Units by Category") +
@@ -895,14 +947,14 @@ ggplot(top_categ, aes(x = category_name, y = total_sold_unit, fill = parent_cate
   scale_fill_discrete(name = "Parent Category")
 ```
 
-
 2.  Total Sold Units by Parent Category
 
-This diagram summarizes the total units of products sold for each parent category. Analyzing sales performance at the parent category level provides businesses with information into overall product category performance.
+This diagram further summarizes the total units of products sold for each parent category. Analyzing sales performance at the parent category level provides businesses with information into overall product category performance and the market trend.
 
 ```{r}
+# calculate the sold units for each parent category and save the value as top_parent_categ
 top_parent_categ <- RSQLite::dbGetQuery(my_connection,"
-                                        SELECT 
+SELECT 
     pc.category_id AS parent_category_id,
     pc.category_name AS parent_category_name,
     SUM(o.quantity_of_product_ordered) AS total_sold_unit
@@ -922,6 +974,7 @@ ORDER BY
 ```
 
 ```{r}
+# visualize the total sold units by parent category with ggplot bar chart
 ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit #, fill = parent_category_name
                              )) +
   geom_bar(stat = "identity") +
@@ -933,9 +986,10 @@ ggplot(top_parent_categ, aes(x = parent_category_name, y = total_sold_unit #, fi
 
 3.  Top Recommenders
 
-This table and diagram show the top customers who have referred the highest number of new customers. Understanding and acknowledging top referrers is crucial for businesses to incentivize and reward loyal customers, foster word-of-mouth marketing, and drive customer acquisition through referral programs.
+This table and diagram show the top customers who have referred the highest number of new customers. Understanding and acknowledging top referrers is of integral importance for businesses to encourage and reward loyal customers in the future, foster word-of-mouth marketing, and drive customer acquisition through referral programs.
 
 ```{sql connection=my_connection}
+-- calculate the referred number of each customer and order from highest to lowest
 SELECT 
     c1.customer_id AS customer_id,
     CONCAT(c1.first_name, ' ', c1.last_name) AS customer_name,
@@ -951,6 +1005,7 @@ ORDER BY
 ```
 
 ```{r}
+# save the top 20 recommenders in top_recommender
 top_recommender <- RSQLite::dbGetQuery(my_connection,"SELECT 
     c1.customer_id AS customer_id,
     CONCAT(c1.first_name, ' ', c1.last_name) AS customer_name,
@@ -968,6 +1023,7 @@ LIMIT 20;
 ```
 
 ```{r}
+# plot the top 20 recommenders by ggplot
 ggplot(top_recommender, aes(x = customer_name, y = referred_number)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
   labs(x = "Customer Name", y = "Number of Referrals", title = "Top 20 Recommenders") +
@@ -976,42 +1032,55 @@ ggplot(top_recommender, aes(x = customer_name, y = referred_number)) +
   coord_flip() 
 ```
 
-5.  Warehouse Capacity and Current Stock
+4.  Warehouse Capacity and Current Stock
 
-This bar plot represents the comparison between warehouse capacity (in blue) and current stock quantities (in pink) for each warehouse; we can easily compare the stock level with the diagram. Understanding the capacity versus actual stock levels is vital for inventory management and logistics planning. It helps businesses ensure optimal stock levels, and avoid stockouts or overstocking situations, and maintain efficient operations. The legend provides clarity on the color representation for capacity and current stock bars, aiding in easy interpretation of the plot.
-```{r barplot}
-barplot(Warehouse$capacity, col = "steelblue", ylim = c(0, max(Warehouse$capacity, Warehouse$current_stock)),
-        main = "Warehouse Capacity and Current Stock", xlab = "Warehouse ID", ylab = "Quantity")
-barplot(Warehouse$current_stock, col = "lightpink", add = TRUE)
-legend("topright", legend = c("Capacity", "Current Stock"), fill = c("steelblue", "lightpink"))
-```
-
-6.  Distribution of Product Prices
-
-This plot provides information into the spread of product prices within categories and highlights the mean price with a dotted red line for easy comparison. This information can be helpful for the company to target the company itself with the correct market and as a reference for potential suppliers.
+This bar plot represents the comparison between warehouse capacity (in blue) and current stock quantities (in pink) for each warehouse; we can easily compare the stock level with the diagram. Understanding the capacity versus actual stock levels is vital for inventory management and logistics planning. It helps businesses ensure optimal stock levels, and avoid stock-outs or overstocking situations.
 
 ```{r}
-# Calculate the mean price
+# filter only those with current stock more than half of the capacity
+filtered_warehouse <- Warehouse %>%
+  filter(current_stock > capacity / 2)
+
+# Plotting with filtered data to see the stock level for these warehouses
+ggplot(filtered_warehouse, aes(x = warehouse_id)) +
+  geom_bar(aes(y = capacity), stat = "identity", fill = "steelblue", alpha = 0.8) +
+  geom_bar(aes(y = current_stock), stat = "identity", fill = "lightpink", alpha = 0.8) +
+  labs(title = "Warehouse Capacity and Current Stock", x = "Warehouse ID", y = "Quantity") +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  scale_fill_manual(values = c("steelblue", "lightpink"), 
+                    labels = c("Capacity", "Current Stock"),
+                    name = "Legend") +  # Modify legend title
+  guides(fill = guide_legend(title = "Legend")) 
+```
+
+5.  Distribution of Product Prices
+
+This plot provides information into the spread of product prices within categories and highlights the mean price with a dotted red line for easy comparison. This information can be helpful for the company to target the correct market segment (low-price, middle-price, or high-price/luxury market) and can be a reference for potential suppliers when setting product prices.
+
+```{r}
+# calculate the mean price
 mean_price <- mean(Product$product_price)
 
-# Create the histogram with ggplot2
+# plot the price distribution and mark the mean with a vertical dotted line
 ggplot(Product, aes(x = product_price)) +
-  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +  # Adjust fill color and transparency
-  geom_vline(xintercept = mean_price, linetype = "dotted", color = "darkred") +  # Add mean line
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = mean_price, linetype = "dotted", color = "darkred") + 
   labs(x = "Product Price", y = "Frequency", title = "Distribution of Product Prices") +
   theme_minimal()
 ```
 
-7.  Number of Customers in Each City
+6.  Number of Customers in Each City
 
-This visualization is valuable to businesses as it enables targeted resource allocation and marketing strategies based on the concentration of customers in different cities, enhancing market penetration. Additionally, it helps in identifying expansion opportunities and assessing market competitiveness.
+This visualization is valuable to businesses as it enables targeted resource allocation and marketing strategies based on the concentration of customers in different cities, enhancing market penetration; it also helps in identifying expansion opportunities.
 
 ```{r}
+# calculate the number of customers in each city
 city_counts <- Customer %>%
   group_by(city) %>%
   summarise(num_customers = n())
 
-# Plot the counts
+# Plot the counts using ggplot
 ggplot(city_counts, aes(x = reorder(city, -num_customers), y = num_customers)) +
   geom_bar(stat = "identity") +
   labs(x = "City", y = "Number of Customers",
@@ -1020,57 +1089,89 @@ ggplot(city_counts, aes(x = reorder(city, -num_customers), y = num_customers)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+7.  Product Review Rating Rank
 
-8.  Product Review Rating Rank
+The information about the average rating for each product helps identify highly rated products, which can be used for product recommendations, and increase customer satisfaction.
 
-```{r}
+```{r, warning=FALSE}
+# check the data type for 'review_rating' before analyzing
 class(Orders$review_rating)
+
+# make sure the data type is numeric so that we can calculate the average value
 Orders$review_rating <- as.numeric(Orders$review_rating)
+
+# calculate average rating for each product
 product_ratings <- Orders %>%
   group_by(product_id) %>%
   summarise(avg_rating = mean(review_rating, na.rm = TRUE))
 
-product_ratings <- product_ratings[product_ratings$avg_rating >= 3,]
+# specify that we only want to show those with an average rating higher than 4
+product_ratings <- product_ratings[product_ratings$avg_rating >= 4,]
 
 product_ratings <- product_ratings[order(-product_ratings$avg_rating),]
 
+# define those with average rating=5 as top products
 top_products <- product_ratings[product_ratings$avg_rating == 5,]
 
-
+# visualize the rating by ggplot
 ggplot(product_ratings, aes(x = reorder(product_id, -avg_rating), y = avg_rating, fill = factor(product_id %in% top_products$product_id))) +
   geom_bar(stat = "identity") +
   labs(x = "Product ID", y = "Average Rating",
        title = "Average Rating for Each Product") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 0)) +
+  theme(axis.text.x = element_text(angle = 00, hjust = 0)) +
   scale_fill_manual(values = c("grey80", "darkred"), guide = FALSE)
 ```
 
+8.  Number of Products Ordered per Day
 
+Tracking the number of products ordered per day helps in identifying peak sales periods, analyzing demand fluctuations, and making decisions related to marketing campaigns. Additionally, it provides insights into customer behavior patterns and can improve forecasting future sales volumes to ensure adequate stock levels. This information can help businesses prepare future promotion on high or low orders period.
 
-9.  
 ```{r}
+# ensure that data type are correct before calculating and viualizing them
 Orders$order_date <- as.Date(Orders$order_date)
 Orders$quantity_of_product_ordered <- as.numeric(Orders$quantity_of_product_ordered)
 
+# calculate the number of products ordered every day
 agg_data <- Orders %>%
   group_by(order_date) %>%
   summarise(total_quantity = sum(quantity_of_product_ordered))
 
-# Plot using ggplot
+# plot the result using ggplot
 ggplot(agg_data, aes(x = order_date, y = total_quantity)) +
   geom_line(stat = "identity", color = "steelblue") +
   labs(x = "Order Date", y = "Total Quantity Ordered", title = "Number of Products Ordered per Day")
 ```
 
-10.  
+9.  Units Sold by Parent Category Across Time
+
+Analyzing units sold by each parent category across time helps in identifying top-performing parent categories, tracking sales and market trends over time, and optimizing marketing strategies for different parent categories.
+
 ```{r}
+# Ensure that data type are the same before joinning tables together
+Product$product_id <- as.character(Product$product_id)
+Orders$product_id <- as.character(Orders$product_id)
+Product$category_id <- as.character(Product$category_id)
+Category$category_id <- as.character(Category$category_id)
+Category$parent_id <- as.character(Category$parent_id)
+
+# use self join for Category table
+Category <- Category %>%
+  left_join(Category, by = c("parent_id" = "category_id"), suffix = c("", "_parent"))
+
+# create the parent_name column based on the join result
+Category <- Category %>%
+  mutate(parent_name = ifelse(is.na(parent_id), NA, category_name_parent)) %>%
+  select(category_id, category_name, parent_id, parent_name)
+
+# calculate unit sold by each parent category across time
 sales_data <- Orders %>%
   inner_join(Product, by = "product_id") %>%
   inner_join(Category, by = "category_id") %>%
   group_by(order_date, parent_id, parent_name) %>%
   summarise(units_sold = sum(quantity_of_product_ordered))
 
+# use ggolot to visualize the calculated result
 ggplot(sales_data, aes(x = order_date, y = units_sold, color = parent_name)) +
   geom_line() +
   labs(x = "Order Date", y = "Units Sold", title = "Units Sold by Parent Category Across Time") +
