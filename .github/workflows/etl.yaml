@@ -53,10 +53,6 @@ jobs:
       - name: Pull changes
         run: |
           git pull --no-rebase origin master
-      - name: Save primary key check logs
-        run: |
-          mkdir -p log
-          Rscript R/DataManagement31.R > log/primary_key_check_log.txt
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
