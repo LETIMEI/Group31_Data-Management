@@ -49,6 +49,7 @@ jobs:
           git add --all figures/
       - name: Commit files
         run: |
+          git add e-commerce.db
           git commit -m "Add plot figure"
       - name: Pull changes
         run: |
