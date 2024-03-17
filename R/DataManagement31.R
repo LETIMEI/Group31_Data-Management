@@ -223,6 +223,42 @@ for (variable in all_files) {
   print(paste0(" is ",nrow(unique(this_file_contents[,1]))==number_of_rows))
 }
 
+
+
+
+perform_primary_key_check <- function(folder_name, table_name) {
+  all_files <- list.files(paste0("data_upload/", folder_name, "_dataset/"))
+  log_file <- file(paste0("log/", table_name, "_primary_key_check.log"), open = "wt")  # Open log file for writing
+  
+  for (variable in all_files) {
+    this_filepath <- paste0("data_upload/", folder_name, "_dataset/", variable)
+    this_file_contents <- readr::read_csv(this_filepath)
+    number_of_rows <- nrow(this_file_contents)
+    
+    cat(paste0("Checking for: ", variable), "\n", file = log_file)
+    cat(paste0(" is ", nrow(unique(this_file_contents[, 1])) == number_of_rows), "\n", file = log_file)
+  }
+  
+  close(log_file)  # Close the log file after writing
+}
+
+# Perform primary key checks for each table
+perform_primary_key_check("Category", "Category")
+perform_primary_key_check("Customer", "Customer")
+perform_primary_key_check("Warehouse", "Warehouse")
+perform_primary_key_check("Supplier", "Supplier")
+perform_primary_key_check("Product", "Product")
+perform_primary_key_check("Shipment", "Shipment")
+perform_primary_key_check("Orders", "Orders")
+
+
+
+
+
+
+
+
+
 list_csv_files <- function(folder_path) {
   files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
   return(files)
