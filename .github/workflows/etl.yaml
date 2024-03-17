@@ -59,10 +59,12 @@ jobs:
         run: |
           git pull --no-rebase origin master
 
-      - name: Save primary key check logs
+      - name: Add log files
         run: |
-          mkdir -p log
-          Rscript R/DataManagement31.R > log/primary_key_check_log.txt
+          git config --local --unset-all "http.https://github.com/.extraheader"
+          git config --global user.email "meimelody1129@gmail.com"
+          git config --global user.name "LETIMEI"
+          git add log/
 
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
