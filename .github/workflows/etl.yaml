@@ -44,7 +44,7 @@ jobs:
           Rscript -e 'install.packages("chron")'
           Rscript -e 'install.packages("ggplot2")'
 
-      - name: Add files
+      - name: Add figures
         run: |
           git config --local --unset-all "http.https://github.com/.extraheader"
           git config --global user.email "meimelody1129@gmail.com"
@@ -64,7 +64,7 @@ jobs:
           git config --local --unset-all "http.https://github.com/.extraheader"
           git config --global user.email "meimelody1129@gmail.com"
           git config --global user.name "LETIMEI"
-          git add log/
+          git add --all log/
 
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
