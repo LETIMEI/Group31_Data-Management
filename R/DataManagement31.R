@@ -240,6 +240,13 @@ perform_primary_key_check <- function(folder_name, table_name) {
   }
   
   close(log_file)  # Close the log file after writing
+  
+  # Commit and push log files to Git
+  system("git config --global user.email 'meimelody1129@gmail.com'")
+  system("git config --global user.name 'LETIMEI'")
+  system("git add log/")
+  system("git commit -m 'Add log files'")
+  system("git push origin master")  # Modify the branch name as needed
 }
 
 # Perform primary key checks for each table
@@ -250,10 +257,6 @@ perform_primary_key_check("Supplier", "Supplier")
 perform_primary_key_check("Product", "Product")
 perform_primary_key_check("Shipment", "Shipment")
 perform_primary_key_check("Orders", "Orders")
-
-
-
-
 
 
 
