@@ -6,9 +6,9 @@ on:
   push:
     branches: [ master ]
     paths:
-     - '.github/workflows/'
-     - 'R/'
-     - 'data_upload/'
+     - '.github/workflows/**'
+     - 'R/**'
+     - 'data_upload/**'
     
 jobs:
   build:
